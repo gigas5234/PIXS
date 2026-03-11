@@ -26,7 +26,7 @@ async function detectSpeciesFromImage(
     debug.push({ step: "species_detect", detail: { raw: text, species } });
     return species;
   } catch (e) {
-    debug.push({ step: "species_detect", detail: "fallback to pet", error: String(e) });
+    debug.push({ step: "species_detect", detail: { fallback: "pet", message: String(e) } });
     return "pet";
   }
 }
