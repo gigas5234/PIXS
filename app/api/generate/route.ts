@@ -193,53 +193,32 @@ export async function POST(request: NextRequest) {
       detail: { referenceId: REFERENCE_ID, promptContainsRef: prompt.includes(`[${REFERENCE_ID}]`) },
     });
 
-    // 참조 이미지 고정: 업로드된 이미지를 항상 첫 번째 입력(input_file_0 / referenceId 1)로 할당
-    // 파일명과 무관하게 formData 'image' 키로 전달된 파일 사용
-    // 프롬프트의 [1]과 referenceId 매칭 확인
-    const subjectRef = new SubjectReferenceImage();
-    subjectRef.referenceImage = { imageBytes: base64, mimeType };
-    subjectRef.referenceId = REFERENCE_ID;
-    subjectRef.config = {
-      subjectType: SubjectReferenceType.SUBJECT_TYPE_ANIMAL,
-      subjectDescription:
-        "The specific pet with its unique breed, fur pattern, facial structure, and identity. Recreate this exact animal, not a generic one.",
-    };
-
-    // Imagen 3 편집 모델: us-central1에서 공식 지원되는 이미지 편집 엔드포인트
-    // 참고: https://cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/3-0-capability-001
+    // Nano Banana (Gemini 2.0 Flash Experimental) 이미지 생성 요청
     debug.push({
-      step: "call_edit_image",
+      step: "call_generate_content_image",
       detail: {
-        model: "imagen-3.0-capability-001",
+        model: "gemini-2.0-flash-001",
         project: projectId,
         location,
-        referenceId: REFERENCE_ID,
         species,
-        imageSizeBytes: imageSize,
-        referenceImageWeight: 0.95,
-        subjectConsistency: 0.95,
-        guidanceScale: 60,
       },
     });
-    const editConfig = {
-      numberOfImages: 1,
-      aspectRatio: "1:1" as const,
-      // Subject/Identity 우선: 프롬프트 스타일보다 업로드된 얼굴을 더 강하게 유지
-      guidanceScale: 60,
-      referenceImageWeight: 0.95,
-      subjectConsistency: 0.95,
-    };
 
-    const response = await ai.models.editImage({
-      // Vertex AI Imagen 3 편집 모델 (us-central1 지원)
-      model: "imagen-3.0-capability-001",
-      prompt,
-      referenceImages: [subjectRef],
-      config: editConfig,
+    // Gemini 2.0 Flash Experimental (Vertex AI) - generateContent를 통해 이미지 생성
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-001",
+      contents: [
+        { inlineData: { data: base64, mimeType } },
+        { text: prompt }
+      ],
+      config: {
+        // 응답으로 텍스트 대신 이미지를 반환하도록 지시
+        responseModalities: ["IMAGE"],
+      },
     });
 
-    const generatedImage = response.generatedImages?.[0];
-    const imageBytes = generatedImage?.image?.imageBytes;
+    const part = response.candidates?.[0]?.content?.parts?.[0];
+    const imageBytes = part?.inlineData?.data;
 
     if (!imageBytes) {
       debug.push({ step: "response", error: "No image in response", detail: response });
