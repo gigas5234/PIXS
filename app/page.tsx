@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { getPromptFileByStyle } from "@/lib/prompts/style-prompts";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { DebugLogPanel, type LogEntry } from "@/components/DebugLogPanel";
 
 /* ─────────────────────────────────────────────
    Style data — imageSrc: null = placeholder
@@ -150,6 +151,10 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
 /* ─────────────────────────────────────────────
    Main Page
 ───────────────────────────────────────────── */
+function now() {
+  return new Date().toLocaleTimeString("ko-KR", { hour12: false });
+}
+
 export default function HomePage() {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string>("rembrandt");
@@ -157,9 +162,17 @@ export default function HomePage() {
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
 
   const selected = STYLES.find((s) => s.id === selectedId) ?? STYLES[0];
   const canGenerate = Boolean(uploadedFile);
+
+  const addLog = useCallback((entry: Omit<LogEntry, "id" | "time">) => {
+    setLogs((prev) => [
+      ...prev,
+      { ...entry, id: crypto.randomUUID(), time: now() },
+    ]);
+  }, []);
 
   const handleFileSelection = (file: File | null) => {
     if (!file) return;
@@ -171,9 +184,9 @@ export default function HomePage() {
     });
   };
 
-  const handleGenerate = () => {
-    if (!canGenerate || isGenerating) return;
-    setIsGenerating(true);
+  const handleGenerate = useCallback(async () => {
+    if (!canGenerate || !uploadedFile || isGenerating) return;
+
     const promptTemplate = getPromptFileByStyle(selectedId);
     if (typeof window !== "undefined") {
       sessionStorage.setItem("pixs:selectedStyle", selectedId);
@@ -181,12 +194,46 @@ export default function HomePage() {
       sessionStorage.setItem("pixs:promptTemplate", promptTemplate ?? "");
       if (uploadPreviewUrl) sessionStorage.setItem("pixs:uploadPreviewUrl", uploadPreviewUrl);
     }
-    const delay = 3000 + Math.floor(Math.random() * 2000);
-    window.setTimeout(() => {
+
+    setIsGenerating(true);
+    addLog({ type: "request", message: `POST /api/generate (style: ${selectedId})` });
+
+    try {
+      const formData = new FormData();
+      formData.append("image", uploadedFile);
+      formData.append("styleId", selectedId);
+
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        addLog({
+          type: "error",
+          message: data.error ?? `HTTP ${res.status}`,
+          detail: data.debug,
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      if (data.imageUrl) {
+        sessionStorage.setItem("pixs:resultImageUrl", data.imageUrl);
+        addLog({ type: "success", message: "이미지 생성 완료" });
+        router.push(`/result?style=${selectedId}`);
+      } else {
+        addLog({ type: "error", message: "응답에 imageUrl 없음", detail: data });
+        setIsGenerating(false);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      addLog({ type: "error", message: msg, detail: err });
       setIsGenerating(false);
-      router.push(`/result?style=${selectedId}`);
-    }, delay);
-  };
+    }
+  }, [canGenerate, uploadedFile, selectedId, selected.title, uploadPreviewUrl, isGenerating, addLog, router]);
 
   useEffect(() => {
     return () => {
@@ -197,6 +244,10 @@ export default function HomePage() {
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#080808] text-white">
       <LoadingOverlay isVisible={isGenerating} />
+      <DebugLogPanel
+        logs={logs}
+        onClear={() => setLogs([])}
+      />
 
       {/* Ambient concept glow — shifts between wine (atelier) and blue (cinematic) */}
       <motion.div
@@ -225,8 +276,10 @@ export default function HomePage() {
             <Sparkles size={13} />
             PIXS Studio
           </p>
-          <h1 className="font-serif-display text-3xl tracking-[0.06em] text-[#f8ebee] sm:text-5xl lg:text-6xl">
-            반려동물, 그 영원한 기록.
+          <h1 className="font-serif-display text-center text-3xl tracking-[0.06em] text-[#f8ebee] sm:text-5xl lg:text-6xl">
+            반려동물,
+            <br />
+            그 영원한 기록.
           </h1>
           <p className="font-serif-display mx-auto mt-5 max-w-xl text-base leading-relaxed text-[#f1d8dd]/78 sm:text-xl">
             거장의 붓 터치로 탄생하는 단 하나의 마스터피스.
@@ -490,7 +543,7 @@ export default function HomePage() {
             <motion.button
               type="button"
               onClick={handleGenerate}
-              disabled={!canGenerate || isGenerating}
+              disabled={!canGenerate}
               whileHover={canGenerate ? { scale: 1.02 } : undefined}
               className={`gold-border-glow rounded-full px-10 py-3 text-sm font-semibold tracking-wide transition-all duration-500 ${
                 canGenerate
