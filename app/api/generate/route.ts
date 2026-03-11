@@ -5,32 +5,69 @@ import { tmpdir } from "node:os";
 import { GoogleGenAI, SubjectReferenceImage, SubjectReferenceType } from "@google/genai";
 import { loadStylePrompt } from "@/lib/prompts/load-style-prompt";
 
-/** 이미지에서 동물 종류(Cat/Dog) 감지. 실패 시 "pet" 반환. */
-async function detectSpeciesFromImage(
+/** 3단계 동물 분석 결과 */
+type PetAnalysis = {
+  isAnimal: boolean;
+  animalType: string; // dog, cat, bird, rabbit, hamster, etc.
+  breed: string; // Husky, Persian, etc. or "unknown"
+};
+
+/** 1) 동물 여부 2) 동물 종류 3) 품종 — 단일 호출로 일관된 분석 */
+async function analyzePetImage(
   ai: GoogleGenAI,
   base64: string,
   mimeType: string,
   debug: { step?: string; detail?: unknown }[],
-): Promise<string> {
+): Promise<PetAnalysis> {
+  const fallback: PetAnalysis = { isAnimal: true, animalType: "pet", breed: "unknown" };
   try {
     const res = await ai.models.generateContent({
-      // Vertex AI Gemini 2.0 Flash Experimental (Nano Banana 근접) - Vertex 모델 ID
-      // Gemini API의 `gemini-2.0-flash-exp`에 해당하는 Vertex 버전은 `gemini-2.0-flash-001`
       model: "gemini-2.0-flash-001",
       contents: [
         { inlineData: { data: base64, mimeType } },
-        { text: "What is the primary animal in this image? Reply with exactly one word: Cat or Dog. If unclear or neither, reply: pet." },
+        {
+          text: `Analyze this image step by step:
+1. Is there a pet/animal as the primary subject? (yes/no)
+2. What animal is it? (dog, cat, bird, rabbit, hamster, guinea pig, etc. Use "other" if unclear)
+3. What is the breed or specific type? (e.g. Husky, Golden Retriever, Persian, Budgerigar. Use "unknown" if not identifiable)
+
+Reply ONLY with valid JSON, no other text:
+{"isAnimal":true|false,"animalType":"dog"|"cat"|"bird"|etc,"breed":"Husky"|"unknown"|etc}`,
+        },
       ],
     });
-    const text =
-      res.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase() ?? "pet";
-    const species = text === "cat" ? "Cat" : text === "dog" ? "Dog" : "pet";
-    debug.push({ step: "species_detect", detail: { raw: text, species } });
-    return species;
+    const raw =
+      res.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+    const parsed = (() => {
+      const m = raw.match(/\{[\s\S]*\}/);
+      if (!m) return null;
+      try {
+        return JSON.parse(m[0]) as Partial<PetAnalysis>;
+      } catch {
+        return null;
+      }
+    })();
+
+    const result: PetAnalysis = {
+      isAnimal: parsed?.isAnimal ?? true,
+      animalType: (parsed?.animalType ?? "pet").toLowerCase().replace(/\s+/g, "-"),
+      breed: (parsed?.breed ?? "unknown").trim(),
+    };
+    if (result.animalType === "other" || !result.animalType) result.animalType = "pet";
+
+    debug.push({ step: "pet_analysis", detail: { raw, parsed: result } });
+    return result;
   } catch (e) {
-    debug.push({ step: "species_detect", detail: { fallback: "pet", message: String(e) } });
-    return "pet";
+    debug.push({ step: "pet_analysis", detail: { fallback, message: String(e) } });
+    return fallback;
   }
+}
+
+/** 하위 호환: PetAnalysis → species 문자열 (Cat/Dog/pet) */
+function analysisToSpecies(a: PetAnalysis): string {
+  if (a.animalType === "cat") return "Cat";
+  if (a.animalType === "dog") return "Dog";
+  return "pet";
 }
 
 function resolveCredentialsPath(debug: { step?: string; detail?: unknown }[]): string | null {
@@ -165,10 +202,11 @@ export async function POST(request: NextRequest) {
       location,
     });
 
-    // [Species] 동적 치환: 이미지 분석으로 Cat/Dog 감지
-    const species = await detectSpeciesFromImage(ai, base64, mimeType, debug);
+    // 3단계 분석: 동물 여부 → 종류 → 품종
+    const analysis = await analyzePetImage(ai, base64, mimeType, debug);
+    const species = analysisToSpecies(analysis);
 
-    debug.push({ step: "load_prompt", detail: { styleId, signatureText } });
+    debug.push({ step: "load_prompt", detail: { styleId, signatureText, analysis } });
     const stylePrompt = await loadStylePrompt(styleId, species);
     if (!stylePrompt) {
       debug.push({ step: "load_prompt", error: `Unknown style: ${styleId}` });
@@ -178,9 +216,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Subject Identity Anchoring: pre-pend 강제 주입
-    // [REFERENCE_ID]와 referenceImages의 referenceId가 정확히 매칭되어야 함
-    const identityAnchor = `Strictly preserve the exact face, facial anatomy, ear shape, eye color, and unique markings of the pet shown in the uploaded image [${REFERENCE_ID}]. Do not change species or breeds. Do not create a generic animal; faithfully recreate THIS specific individual and then apply the requested style on top. `;
+    // Subject Identity Anchoring: 분석 결과(종류·품종)를 명시해 일관성 강화
+    const subjectDesc =
+      analysis.breed !== "unknown"
+        ? `a ${analysis.breed} ${analysis.animalType}`
+        : `a ${analysis.animalType}`;
+    const identityAnchor = `The subject in reference image [${REFERENCE_ID}] is ${subjectDesc}. Strictly preserve the exact face, facial anatomy, ear shape, eye color, and unique markings of THIS specific individual. Do not change species or breed. Do not create a generic animal; faithfully recreate this exact ${analysis.animalType} and then apply the requested style on top. `;
 
     const signatureInstruction =
       signatureText.length > 0
@@ -199,8 +240,7 @@ export async function POST(request: NextRequest) {
     subjectRef.referenceId = REFERENCE_ID;
     subjectRef.config = {
       subjectType: SubjectReferenceType.SUBJECT_TYPE_ANIMAL,
-      subjectDescription:
-        "The specific pet with its unique breed, fur pattern, facial structure, and identity. Recreate this exact animal, not a generic one.",
+      subjectDescription: `The specific ${subjectDesc} with its unique fur/feather pattern, facial structure, and identity. Recreate this exact individual, not a generic ${analysis.animalType}.`,
     };
 
     // Imagen 3 (Vertex AI) 편집 모델로 정체성 유지하며 생성
@@ -211,7 +251,7 @@ export async function POST(request: NextRequest) {
         project: projectId,
         location,
         referenceId: REFERENCE_ID,
-        species,
+        analysis,
         imageSizeBytes: imageSize,
         referenceImageWeight: 0.95,
         subjectConsistency: 0.95,
