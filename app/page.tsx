@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { Sparkles } from "lucide-react";
-import { getPromptByStyle } from "@/lib/prompts/style-prompts";
+import { getPromptFileByStyle } from "@/lib/prompts/style-prompts";
 
 type ConceptId = "atelier" | "cinematic";
 
@@ -15,6 +15,7 @@ type StyleItem = {
   subtitle: string;
   previewClass: string;
   concept: ConceptId;
+  sampleImage?: string;
 };
 
 const styles: StyleItem[] = [
@@ -23,6 +24,7 @@ const styles: StyleItem[] = [
     title: "Rembrandt",
     subtitle: "빛과 그림자의 거장",
     concept: "atelier",
+    sampleImage: "/gallery/rembrandt_sample.png",
     previewClass:
       "bg-[radial-gradient(circle_at_18%_12%,rgba(188,89,103,0.42),transparent_35%),linear-gradient(165deg,#3a141a_0%,#130f12_48%,#241218_100%)]",
   },
@@ -55,6 +57,7 @@ const styles: StyleItem[] = [
     title: "Marvel Hero",
     subtitle: "강렬한 히어로 조명의 중심",
     concept: "cinematic",
+    sampleImage: "/gallery/heroic_sample.png",
     previewClass:
       "bg-[radial-gradient(circle_at_70%_16%,rgba(78,130,255,0.32),transparent_35%),linear-gradient(152deg,#111726_0%,#101118_54%,#0f1622_100%)]",
   },
@@ -129,7 +132,7 @@ export default function HomePage() {
     }
     setIsGenerating(true);
 
-    const promptTemplate = selectedStyleId ? getPromptByStyle(selectedStyleId) : null;
+    const promptTemplate = selectedStyleId ? getPromptFileByStyle(selectedStyleId) : null;
     if (typeof window !== "undefined") {
       sessionStorage.setItem("pixs:selectedStyle", selectedStyleId ?? "");
       sessionStorage.setItem("pixs:selectedStyleTitle", selectedStyle?.title ?? "");
@@ -291,6 +294,12 @@ export default function HomePage() {
                     <div
                       className={`absolute inset-0 scale-[1.02] opacity-0 transition duration-500 group-hover:opacity-100 group-hover:scale-[1.06] ${style.previewClass}`}
                     />
+                    {style.sampleImage && (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center opacity-0 transition duration-500 group-hover:opacity-55"
+                        style={{ backgroundImage: `url('${style.sampleImage}')` }}
+                      />
+                    )}
                     <div
                       className={`pointer-events-none absolute -inset-3 -z-10 rounded-3xl opacity-0 blur-2xl transition duration-500 group-hover:opacity-60 ${
                         selectedConcept === "atelier" ? "bg-[#800808]/35" : "bg-[#4b7dd4]/30"
@@ -455,7 +464,14 @@ export default function HomePage() {
                 whileHover={{ scale: 1.02 }}
                 className="overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-3 transition-[all] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
               >
-                <div className={`aspect-[4/5] rounded-xl ${style.previewClass}`} />
+                <div className={`relative aspect-[4/5] overflow-hidden rounded-xl ${style.previewClass}`}>
+                  {style.sampleImage && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center opacity-70"
+                      style={{ backgroundImage: `url('${style.sampleImage}')` }}
+                    />
+                  )}
+                </div>
                 <p className="font-serif-display mt-3 text-base text-[#f2d5db]">{style.title}</p>
                 <p className="lux-copy mt-1 text-xs text-white/64">{style.subtitle}</p>
               </motion.article>

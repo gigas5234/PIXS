@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download, Share2 } from "lucide-react";
-import { getPromptByStyle } from "@/lib/prompts/style-prompts";
+import { getPromptFileByStyle } from "@/lib/prompts/style-prompts";
 
 const stylePreviewMap: Record<string, string> = {
   rembrandt:
@@ -85,7 +85,7 @@ export function ResultView({ styleId }: { styleId: string }) {
         </div>
 
         <p className="mt-6 text-center text-xs text-white/50">
-          선택된 스타일: {styleTitle} / 프롬프트 연결: {getPromptByStyle(styleId) ? "완료" : "미연결"}
+          선택된 스타일: {styleTitle} / 프롬프트 연결: {getPromptFileByStyle(styleId) ? "완료" : "미연결"}
         </p>
       </section>
     </main>
