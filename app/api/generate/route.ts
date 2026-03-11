@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       referenceImages: [subjectRef],
       config: {
         numberOfImages: 1,
-        aspectRatio: "4:5",
+        aspectRatio: "1:1",
       },
     });
 

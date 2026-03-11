@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { getPromptFileByStyle } from "@/lib/prompts/style-prompts";
+import { centerCropToSquare } from "@/lib/image-utils";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { DebugLogPanel, type LogEntry } from "@/components/DebugLogPanel";
 
@@ -174,14 +175,27 @@ export default function HomePage() {
     ]);
   }, []);
 
-  const handleFileSelection = (file: File | null) => {
+  const handleFileSelection = async (file: File | null) => {
     if (!file) return;
-    setUploadedFile(file);
-    const nextUrl = URL.createObjectURL(file);
-    setUploadPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return nextUrl;
-    });
+    try {
+      const blob = await centerCropToSquare(file);
+      const croppedFile = new File([blob], file.name.replace(/\.[^.]+$/, ".png") || "cropped.png", {
+        type: "image/png",
+      });
+      setUploadedFile(croppedFile);
+      const nextUrl = URL.createObjectURL(blob);
+      setUploadPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return nextUrl;
+      });
+    } catch {
+      setUploadedFile(file);
+      const fallbackUrl = URL.createObjectURL(file);
+      setUploadPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return fallbackUrl;
+      });
+    }
   };
 
   const handleGenerate = useCallback(async () => {
@@ -308,8 +322,7 @@ export default function HomePage() {
                 ],
               }}
               transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-              className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0a0a]"
-              style={{ height: "clamp(240px, 44vw, 480px)" }}
+              className="relative aspect-square w-full max-w-[min(44vw,480px)] overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0a0a]"
             >
               <div className="noise-overlay" />
 
@@ -337,7 +350,7 @@ export default function HomePage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 1.02 }}
                     transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0 h-full w-full object-contain"
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
                 )}
               </AnimatePresence>
@@ -532,7 +545,7 @@ export default function HomePage() {
           {uploadPreviewUrl && (
             <div className="mt-4 overflow-hidden rounded-xl border border-white/[0.08] bg-black/35 p-2">
               <div
-                className="aspect-[4/3] rounded-lg bg-cover bg-center"
+                className="aspect-square max-w-[200px] rounded-lg bg-cover bg-center"
                 style={{ backgroundImage: `url('${uploadPreviewUrl}')` }}
               />
             </div>

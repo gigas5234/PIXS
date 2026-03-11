@@ -143,9 +143,8 @@ export function ResultView({ styleId }: ResultViewProps) {
               <motion.div
                 animate={{ opacity: [0.6, 1, 0.6] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a]"
+                className="relative aspect-square w-full max-w-[min(50vw,420px)] overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a]"
                 style={{
-                  height: "clamp(280px, 50vw, 420px)",
                   boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 20px 80px rgba(0,0,0,0.8)",
                 }}
               >
@@ -245,8 +244,8 @@ export function ResultView({ styleId }: ResultViewProps) {
                   style={{ borderRadius: "calc(1.5rem - 6px)" }}
                 />
 
-                {/* Artwork — mist clearing reveal */}
-                <div className="relative overflow-hidden rounded-xl bg-black/60" style={{ aspectRatio: "4/5" }}>
+                {/* Artwork — mist clearing reveal (1:1 square) */}
+                <div className="relative aspect-square overflow-hidden rounded-xl bg-black/60">
                   <AnimatePresence>
                     {resultImageUrl ? (
                       <motion.img
@@ -256,7 +255,7 @@ export function ResultView({ styleId }: ResultViewProps) {
                         initial={{ opacity: 0, filter: "blur(20px)" }}
                         animate={{ opacity: 1, filter: "blur(0px)" }}
                         transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-                        className="h-full w-full object-contain"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
                       <motion.div
