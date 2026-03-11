@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const image = formData.get("image") as File | null;
     const styleId = (formData.get("styleId") as string) ?? "";
+    const signatureText = ((formData.get("signatureText") as string) ?? "").trim();
 
     if (!image || !styleId) {
       debug.push({ step: "validate", error: "image and styleId required" });
@@ -167,7 +168,7 @@ export async function POST(request: NextRequest) {
     // [Species] 동적 치환: 이미지 분석으로 Cat/Dog 감지
     const species = await detectSpeciesFromImage(ai, base64, mimeType, debug);
 
-    debug.push({ step: "load_prompt", detail: styleId });
+    debug.push({ step: "load_prompt", detail: { styleId, signatureText } });
     const stylePrompt = await loadStylePrompt(styleId, species);
     if (!stylePrompt) {
       debug.push({ step: "load_prompt", error: `Unknown style: ${styleId}` });
@@ -180,7 +181,13 @@ export async function POST(request: NextRequest) {
     // Subject Identity Anchoring: pre-pend 강제 주입
     // [REFERENCE_ID]와 referenceImages의 referenceId가 정확히 매칭되어야 함
     const identityAnchor = `Strictly preserve the exact face, facial anatomy, ear shape, eye color, and unique markings of the pet shown in the uploaded image [${REFERENCE_ID}]. Do not change species or breeds. Do not create a generic animal; faithfully recreate THIS specific individual and then apply the requested style on top. `;
-    const prompt = identityAnchor + stylePrompt;
+
+    const signatureInstruction =
+      signatureText.length > 0
+        ? ` Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Then incorporate the signature text "${signatureText}" in an elegant, small handwritten script in the bottom-right corner of the artwork, making it feel naturally integrated into the medium (for example, carved into paint or inked on paper).`
+        : "";
+
+    const prompt = identityAnchor + stylePrompt + signatureInstruction;
     debug.push({
       step: "prompt_ref_match",
       detail: { referenceId: REFERENCE_ID, promptContainsRef: prompt.includes(`[${REFERENCE_ID}]`) },

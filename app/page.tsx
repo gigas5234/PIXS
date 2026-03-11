@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, PenLine } from "lucide-react";
 import { getPromptFileByStyle } from "@/lib/prompts/style-prompts";
 import { centerCropToSquare } from "@/lib/image-utils";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -181,6 +181,7 @@ export default function HomePage() {
   const [selectedId, setSelectedId] = useState<string>("rembrandt");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
+  const [signatureText, setSignatureText] = useState<string>("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [apiComplete, setApiComplete] = useState(false);
@@ -228,6 +229,7 @@ export default function HomePage() {
       sessionStorage.setItem("pixs:selectedStyleTitle", selected.title);
       sessionStorage.setItem("pixs:promptTemplate", promptTemplate ?? "");
       if (uploadPreviewUrl) sessionStorage.setItem("pixs:uploadPreviewUrl", uploadPreviewUrl);
+      sessionStorage.setItem("pixs:signatureText", signatureText ?? "");
     }
 
     setIsGenerating(true);
@@ -237,6 +239,7 @@ export default function HomePage() {
       const formData = new FormData();
       formData.append("image", uploadedFile);
       formData.append("styleId", selectedId);
+      formData.append("signatureText", signatureText);
 
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -588,6 +591,23 @@ export default function HomePage() {
                 </label>
               </>
             )}
+          </div>
+
+          {/* 서명 입력란 - The Artist's Pen */}
+          <div className="mt-5">
+            <label className="mb-1 flex items-center gap-2 text-xs text-white/70">
+              <PenLine size={13} className="text-[#b45d69]" />
+              <span>The Artist&apos;s Pen (선택 사항)</span>
+            </label>
+            <div className="relative max-w-md">
+              <input
+                type="text"
+                value={signatureText}
+                onChange={(e) => setSignatureText(e.target.value)}
+                placeholder="작품에 새길 서명을 입력하세요 (예: Masterpiece by Namjoon)"
+                className="w-full border-b border-white/20 bg-transparent px-0 pb-2 text-sm text-white placeholder:text-white/30 focus:border-[#b45d69] focus:outline-none"
+              />
+            </div>
           </div>
 
           {/* Generate button */}

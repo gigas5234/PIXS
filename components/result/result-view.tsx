@@ -19,17 +19,103 @@ export function ResultView({ styleId }: ResultViewProps) {
   const [resultImageUrlFromStorage] = useState<string | null>(
     () => (typeof window !== "undefined" ? sessionStorage.getItem("pixs:resultImageUrl") : null),
   );
+  const [signatureText] = useState<string | null>(
+    () => (typeof window !== "undefined" ? sessionStorage.getItem("pixs:signatureText") : null),
+  );
+  const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
   const [styleTitle] = useState<string>(
     () =>
       (typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null) ?? "선택 스타일",
   );
 
-  const resultImageUrl = resultImageUrlFromStorage ?? uploadPreviewUrl;
+  const baseImageUrl = resultImageUrlFromStorage ?? uploadPreviewUrl;
+  const resultImageUrl = signedImageUrl ?? baseImageUrl;
 
   useEffect(() => {
     const t = window.setTimeout(() => setShowButtons(true), 800);
     return () => window.clearTimeout(t);
   }, []);
+
+  // Canvas 후처리로 서명 합성
+  useEffect(() => {
+    if (!baseImageUrl || !signatureText || signatureText.trim().length === 0) return;
+    let cancelled = false;
+
+    const drawSignatureOnCanvas = async () => {
+      try {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = baseImageUrl;
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error("Failed to load image for signature"));
+        });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        ctx.drawImage(img, 0, 0);
+
+        // 평균 밝기 샘플링 (우측 하단 작은 영역)
+        const margin = Math.floor(canvas.width * 0.05);
+        const sampleX = canvas.width - margin * 2;
+        const sampleY = canvas.height - margin * 2;
+        const sampleWidth = margin * 2;
+        const sampleHeight = margin * 2;
+        const sample = ctx.getImageData(
+          Math.max(0, sampleX),
+          Math.max(0, sampleY),
+          Math.max(1, sampleWidth),
+          Math.max(1, sampleHeight),
+        );
+        let totalLuma = 0;
+        const data = sample.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          totalLuma += l;
+        }
+        const avgLuma = totalLuma / (data.length / 4 || 1);
+
+        const gold = "#DAA520";
+        const charcoal = "#111111";
+        const color = avgLuma > 140 ? charcoal : gold;
+
+        const fontSize = Math.max(16, Math.floor(canvas.width * 0.035));
+        ctx.save();
+        ctx.globalAlpha = 0.7;
+        ctx.font = `${fontSize}px "Cormorant", "Playfair Display", "Times New Roman", serif`;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = color;
+
+        const text = signatureText;
+        const x = canvas.width - margin;
+        const y = canvas.height - margin * 0.6;
+        ctx.fillText(text, x, y);
+        ctx.restore();
+
+        const url = canvas.toDataURL("image/png");
+        if (!cancelled) {
+          setSignedImageUrl(url);
+        }
+      } catch {
+        // 실패 시 원본 이미지를 그대로 사용
+        setSignedImageUrl(null);
+      }
+    };
+
+    drawSignatureOnCanvas();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [baseImageUrl, signatureText]);
 
   const handleDownload = () => {
     if (!resultImageUrl) return;

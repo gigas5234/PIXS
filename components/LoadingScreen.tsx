@@ -36,35 +36,16 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
       transition={{ duration: 0.5 }}
       className={`mx-auto flex flex-col items-center ${className}`}
     >
-      {/* 중앙 PIXS LOADING 로고 */}
-      <div className="relative flex items-center justify-center">
-        <span className="font-serif-display text-2xl font-semibold tracking-[0.55em] text-white/80">
+      {/* 중앙 PIXS LOADING 텍스트 — 은은한 깜빡임 */}
+      <motion.div
+        className="flex items-center justify-center"
+        animate={{ opacity: [0.4, 0.9, 0.4] }}
+        transition={{ duration: 2.0, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <span className="font-serif-display text-2xl font-semibold tracking-[0.55em] text-white/85">
           PIXS LOADING
         </span>
-        {/* 로고 내부 Gradient Sweep */}
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            maskImage:
-              "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
-          }}
-          initial={{ backgroundPositionX: "-100%" }}
-          animate={{ backgroundPositionX: "200%" }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <div
-            className="h-9 w-full"
-            style={{
-              backgroundImage: `linear-gradient(120deg, transparent 0%, ${CRIMSON_SOFT} 25%, #f0cad0 50%, ${CRIMSON_SOFT} 75%, transparent 100%)`,
-              backgroundSize: "220% 100%",
-              mixBlendMode: "screen",
-            }}
-          />
-        </motion.div>
-      </div>
+      </motion.div>
 
       {/* 보조 상태 문구 (아주 작게) */}
       <p className="mt-2 text-[9px] uppercase tracking-[0.28em] text-[#b45d69]/80">
