@@ -203,11 +203,11 @@ export async function POST(request: NextRequest) {
         "The specific pet with its unique breed, fur pattern, facial structure, and identity. Recreate this exact animal, not a generic one.",
     };
 
-    // Nano Banana (Gemini 2.5 Flash Image) 편집 모델로 정체성 유지하며 생성
+    // Imagen 3 (Vertex AI) 편집 모델로 정체성 유지하며 생성
     debug.push({
       step: "call_edit_image",
       detail: {
-        model: "gemini-2.5-flash-image",
+        model: "imagen-3.0-capability-001",
         project: projectId,
         location,
         referenceId: REFERENCE_ID,
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
     };
 
     const response = await ai.models.editImage({
-      model: "gemini-2.5-flash-image",
+      model: "imagen-3.0-capability-001",
       prompt,
       referenceImages: [subjectRef],
       config: editConfig,
