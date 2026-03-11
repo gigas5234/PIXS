@@ -1,5 +1,7 @@
 # PIXS Next.js Foundation Plan
 
+> Test note: Auto-deploy trigger check commit.
+
 ## Recommended Directory Structure
 
 ```text
