@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     // Subject Identity Anchoring: pre-pend 강제 주입
     // [REFERENCE_ID]와 referenceImages의 referenceId가 정확히 매칭되어야 함
-    const identityAnchor = `Strictly maintain the specific breeds, fur patterns, facial structure, and unique identity of the pet shown in the uploaded image [${REFERENCE_ID}]. Do not create a generic animal; recreate THIS specific pet. `;
+    const identityAnchor = `Strictly preserve the exact face, facial anatomy, ear shape, eye color, and unique markings of the pet shown in the uploaded image [${REFERENCE_ID}]. Do not change species or breeds. Do not create a generic animal; faithfully recreate THIS specific individual and then apply the requested style on top. `;
     const prompt = identityAnchor + stylePrompt;
     debug.push({
       step: "prompt_ref_match",
@@ -205,16 +205,18 @@ export async function POST(request: NextRequest) {
         referenceId: REFERENCE_ID,
         species,
         imageSizeBytes: imageSize,
-        referenceImageWeight: 0.85,
+        referenceImageWeight: 0.95,
+        subjectConsistency: 0.95,
+        guidanceScale: 60,
       },
     });
     const editConfig = {
       numberOfImages: 1,
       aspectRatio: "1:1" as const,
-      guidanceScale: 100,
-      // Subject/Identity 우선 (0.85): 프롬프트 간소화로 reference weight 상향
-      referenceImageWeight: 0.85,
-      subjectConsistency: 0.85,
+      // Subject/Identity 우선: 프롬프트 스타일보다 업로드된 얼굴을 더 강하게 유지
+      guidanceScale: 60,
+      referenceImageWeight: 0.95,
+      subjectConsistency: 0.95,
     };
 
     const response = await ai.models.editImage({
