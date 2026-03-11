@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Share2, ImagePlus } from "lucide-react";
+import { Download, Share2, ImagePlus, RefreshCw } from "lucide-react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { RESULT_STYLES } from "@/lib/styles";
 
@@ -42,6 +42,7 @@ export function ResultView({ styleId }: ResultViewProps) {
   const [currentResultUrl, setCurrentResultUrl] = useState<string | null>(null);
   const [currentStyleId, setCurrentStyleId] = useState(styleId);
   const [currentStyleTitle, setCurrentStyleTitle] = useState<string>("");
+  const [selectedStyleId, setSelectedStyleId] = useState(styleId);
 
   const [uploadPreviewUrl] = useState<string | null>(
     () => (typeof window !== "undefined" ? sessionStorage.getItem("pixs:uploadPreviewUrl") : null),
@@ -64,6 +65,7 @@ export function ResultView({ styleId }: ResultViewProps) {
 
   useEffect(() => {
     setCurrentStyleId(styleId);
+    setSelectedStyleId(styleId);
     const title = RESULT_STYLES.find((s) => s.id === styleId)?.title ?? sessionStorage.getItem("pixs:selectedStyleTitle");
     setCurrentStyleTitle(title ?? "");
   }, [styleId]);
@@ -137,6 +139,7 @@ export function ResultView({ styleId }: ResultViewProps) {
       setRegenerateProgress(100);
       setCurrentResultUrl(data.imageUrl);
       setCurrentStyleId(newStyleId);
+      setSelectedStyleId(newStyleId);
       setCurrentStyleTitle(RESULT_STYLES.find((s) => s.id === newStyleId)?.title ?? newStyleId);
       setSignedImageUrl(null);
       if (typeof window !== "undefined") {
@@ -404,25 +407,45 @@ export function ResultView({ styleId }: ResultViewProps) {
                 <p className="mt-4 text-center font-serif-display text-sm text-[#e8c4c9]">{styleTitle}</p>
               </motion.div>
 
-              {/* 인라인 스타일 선택 — 가로 스크롤 */}
+              {/* 인라인 스타일 선택 — 가로 스크롤 (선택만, 생성은 버튼으로) */}
               <div className="mt-6">
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {RESULT_STYLES.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => handleReGenerate(s.id)}
-                      disabled={isRegenerating || s.id === currentStyleId}
-                      className={`flex-none rounded-lg border px-3 py-2 text-xs font-medium transition ${
-                        s.id === currentStyleId
-                          ? "border-[#800808]/80 bg-[#800808]/20 text-[#f0c6cd]"
-                          : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
-                      } ${isRegenerating ? "pointer-events-none opacity-50" : ""}`}
-                    >
-                      {s.title}
-                    </button>
-                  ))}
+                  {RESULT_STYLES.map((s) => {
+                    const isCurrent = s.id === currentStyleId;
+                    const isSelected = s.id === selectedStyleId;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setSelectedStyleId(s.id)}
+                        disabled={isRegenerating}
+                        className={`flex-none rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                          isSelected
+                            ? "border-[#800808]/80 bg-[#800808]/20 text-[#f0c6cd]"
+                            : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
+                        } ${isRegenerating ? "pointer-events-none opacity-50" : ""}`}
+                      >
+                        {s.title}
+                        {isCurrent && (
+                          <span className="ml-1.5 text-[10px] text-[#c9a227]/90">(현재)</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+                {/* 선택한 스타일이 현재와 다를 때만 "이 스타일로 다시 그리기" 버튼 표시 */}
+                {selectedStyleId !== currentStyleId && !isRegenerating && (
+                  <motion.button
+                    type="button"
+                    onClick={() => handleReGenerate(selectedStyleId)}
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-[#800808]/70 bg-[#800808]/25 py-2.5 text-sm font-medium text-[#f0c6cd] transition-colors hover:bg-[#800808]/35"
+                  >
+                    <RefreshCw size={16} />
+                    {RESULT_STYLES.find((s) => s.id === selectedStyleId)?.title ?? selectedStyleId} 스타일로 다시 그리기
+                  </motion.button>
+                )}
               </div>
 
               {/* Action buttons */}
