@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkles, PenLine } from "lucide-react";
+import { Sparkles, PenLine, Camera, Palette, Star } from "lucide-react";
 import { getPromptFileByStyle } from "@/lib/prompts/style-prompts";
 import { centerCropToSquare } from "@/lib/image-utils";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -167,7 +167,7 @@ function now() {
 
 export default function HomePage() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string>("rembrandt");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
   const [signatureText, setSignatureText] = useState<string>("");
@@ -176,8 +176,8 @@ export default function HomePage() {
   const [apiComplete, setApiComplete] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
-  const selected = STYLES.find((s) => s.id === selectedId) ?? STYLES[0];
-  const canGenerate = Boolean(uploadedFile);
+  const selected = selectedId ? STYLES.find((s) => s.id === selectedId) ?? null : null;
+  const canGenerate = Boolean(uploadedFile && selectedId);
 
   const addLog = useCallback((entry: Omit<LogEntry, "id" | "time">) => {
     setLogs((prev) => [
@@ -210,7 +210,7 @@ export default function HomePage() {
   };
 
   const handleGenerate = useCallback(async () => {
-    if (!canGenerate || !uploadedFile || isGenerating) return;
+    if (!canGenerate || !uploadedFile || !selectedId || !selected || isGenerating) return;
 
     const promptTemplate = getPromptFileByStyle(selectedId);
     if (typeof window !== "undefined") {
@@ -260,7 +260,7 @@ export default function HomePage() {
       addLog({ type: "error", message: msg, detail: err });
       setIsGenerating(false);
     }
-  }, [canGenerate, uploadedFile, selectedId, selected.title, uploadPreviewUrl, isGenerating, addLog]);
+  }, [canGenerate, uploadedFile, selectedId, selected?.title, uploadPreviewUrl, isGenerating, addLog]);
 
   const handleLoadingComplete = useCallback(() => {
     setApiComplete(false);
@@ -292,7 +292,7 @@ export default function HomePage() {
         className="pointer-events-none fixed inset-0 z-0"
         animate={{
           background:
-            selected.concept === "atelier"
+            !selected || selected.concept === "atelier"
               ? "radial-gradient(ellipse 75% 60% at 22% 32%, rgba(94,11,21,0.16), transparent 60%)"
               : "radial-gradient(ellipse 75% 60% at 78% 32%, rgba(18,42,100,0.16), transparent 60%)",
         }}
@@ -322,11 +322,234 @@ export default function HomePage() {
           <p className="font-serif-display mx-auto mt-5 max-w-xl text-base leading-relaxed text-[#f1d8dd]/78 sm:text-xl">
             거장의 붓 터치로 탄생하는 단 하나의 마스터피스.
           </p>
+
+          {/* Artist Journey — 3단계 스테퍼 */}
+          <div className="mt-8 flex items-center justify-center gap-4 sm:gap-8">
+            {/* 1. 카메라 (업로드) */}
+            <div className="flex flex-col items-center gap-1">
+              <motion.div
+                animate={
+                  !uploadPreviewUrl
+                    ? { opacity: [0.7, 1, 0.7], scale: [0.95, 1.05, 0.95] }
+                    : { opacity: 1, scale: 1 }
+                }
+                transition={{ duration: 2, repeat: !uploadPreviewUrl ? Infinity : 0, ease: "easeInOut" }}
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+                style={{
+                  backgroundColor: uploadPreviewUrl ? "rgba(218,165,32,0.2)" : "transparent",
+                  color: uploadPreviewUrl ? "#DAA520" : "#DAA520",
+                  boxShadow: uploadPreviewUrl ? "0 0 12px rgba(218,165,32,0.4)" : "0 0 16px rgba(218,165,32,0.6)",
+                }}
+              >
+                <Camera size={18} strokeWidth={2} />
+              </motion.div>
+              <span className="text-[9px] tracking-wider text-white/50 uppercase">Upload</span>
+            </div>
+
+            <div className="h-px w-8 sm:w-12 bg-gradient-to-r from-white/10 to-white/5" />
+
+            {/* 2. 팔레트 (스타일) */}
+            <div className="flex flex-col items-center gap-1">
+              <motion.div
+                animate={
+                  uploadPreviewUrl && !selectedId
+                    ? { opacity: [0.7, 1, 0.7], scale: [0.95, 1.05, 0.95] }
+                    : { opacity: 1, scale: 1 }
+                }
+                transition={{ duration: 2, repeat: uploadPreviewUrl && !selectedId ? Infinity : 0, ease: "easeInOut" }}
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-all"
+                style={{
+                  backgroundColor: uploadPreviewUrl ? (selectedId ? "rgba(218,165,32,0.2)" : "rgba(218,165,32,0.12)") : "rgba(255,255,255,0.04)",
+                  color: uploadPreviewUrl ? "#DAA520" : "rgba(255,255,255,0.25)",
+                  boxShadow: uploadPreviewUrl ? (selectedId ? "0 0 12px rgba(218,165,32,0.4)" : "0 0 16px rgba(218,165,32,0.5)") : "none",
+                }}
+              >
+                <Palette size={18} strokeWidth={2} />
+              </motion.div>
+              <span className="text-[9px] tracking-wider text-white/50 uppercase">Style</span>
+            </div>
+
+            <div className="h-px w-8 sm:w-12 bg-gradient-to-r from-white/5 to-white/10" />
+
+            {/* 3. 빛나는 별 (탄생) */}
+            <div className="flex flex-col items-center gap-1">
+              <motion.div
+                animate={
+                  uploadPreviewUrl && selectedId
+                    ? { opacity: [0.8, 1, 0.8], scale: [0.98, 1.02, 0.98] }
+                    : { opacity: 1, scale: 1 }
+                }
+                transition={{ duration: 2.5, repeat: uploadPreviewUrl && selectedId ? Infinity : 0, ease: "easeInOut" }}
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-all"
+                style={{
+                  backgroundColor: uploadPreviewUrl && selectedId ? "rgba(218,165,32,0.25)" : "rgba(255,255,255,0.04)",
+                  color: uploadPreviewUrl && selectedId ? "#DAA520" : "rgba(255,255,255,0.25)",
+                  boxShadow: uploadPreviewUrl && selectedId ? "0 0 20px rgba(218,165,32,0.6)" : "none",
+                }}
+              >
+                <Star size={18} strokeWidth={2} fill={uploadPreviewUrl && selectedId ? "#DAA520" : "none"} />
+              </motion.div>
+              <span className="text-[9px] tracking-wider text-white/50 uppercase">Birth</span>
+            </div>
+          </div>
         </motion.header>
 
         {/* ══════════════════════════════════════
-            2. Masterpiece Canvas (반응형 가로 꽉 참)
+            2. Upload Section (사진 업로드) — 먼저
         ══════════════════════════════════════ */}
+        <motion.section
+          id="upload-section"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto mb-8 max-w-3xl rounded-[1.8rem] border border-white/[0.09] bg-black/22 px-6 py-8 sm:px-8"
+        >
+          {/* Header */}
+          <div className="mb-6">
+            <p className="font-serif-display text-xl text-[#f8dde2]">스튜디오 캔버스 테이블</p>
+            <p className="lux-copy mt-1 text-xs text-white/50">
+              {selected ? (
+                <><span className="text-[#f0cad0]">{selected.title}</span> 스타일로 기록할 사진을 업로드하세요.</>
+              ) : (
+                <>사진을 먼저 업로드하면 스타일을 선택할 수 있습니다.</>
+              )}
+            </p>
+          </div>
+
+          {/* 업로드 영역 — 처음엔 넓게, 업로드 후 작은 썸네일로 축소 */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOver(true);
+            }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragOver(false);
+              handleFileSelection(e.dataTransfer.files?.[0] ?? null);
+            }}
+            className={`relative flex rounded-xl border px-5 py-10 text-center transition-all duration-500 ${
+              uploadPreviewUrl
+                ? "min-h-0 flex-row items-center justify-start gap-4 py-5"
+                : "min-h-[200px] flex-col items-center justify-center"
+            } ${
+              isDragOver
+                ? "border-[#9b3a49]/80 bg-[linear-gradient(165deg,rgba(128,8,8,0.2),rgba(20,16,19,0.38))]"
+                : "border-[#800808]/22 bg-[linear-gradient(165deg,rgba(28,14,17,0.5),rgba(10,10,12,0.45))]"
+            }`}
+          >
+            {uploadPreviewUrl ? (
+              /* 업로드 후: 작은 썸네일로 표시 (이미지 자체는 그대로, 보여주기만 축소) */
+              <label className="flex cursor-pointer items-center gap-4">
+                <div
+                  className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-white/[0.15] bg-black/30 shadow-md"
+                  style={{ backgroundImage: `url('${uploadPreviewUrl}')`, backgroundSize: "cover", backgroundPosition: "center" }}
+                />
+                <div className="text-left">
+                  <span className="inline-block rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs text-white/90 transition hover:border-white/35 hover:bg-white/10">
+                    다른 사진으로 변경
+                  </span>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
+                />
+              </label>
+            ) : (
+              <>
+                <motion.div
+                  aria-hidden
+                  animate={
+                    isDragOver
+                      ? { opacity: [0.1, 0.3, 0.1], scale: [0.98, 1.02, 0.98] }
+                      : { opacity: 0, scale: 1 }
+                  }
+                  transition={{ duration: 1.2, repeat: isDragOver ? Infinity : 0, ease: "easeInOut" }}
+                  className="pointer-events-none absolute inset-3 rounded-lg bg-[radial-gradient(circle_at_30%_22%,rgba(146,36,51,0.28),transparent_56%)]"
+                />
+                <div className="pointer-events-none absolute inset-4 rounded-md border border-white/[0.08]" />
+
+                <p className="lux-copy text-sm text-white/80">예술로 재탄생할 반려동물의 사진을 먼저 올려주세요</p>
+                <p className="mt-2 text-xs text-white/44">드래그 앤 드롭 또는 직접 파일 선택</p>
+
+                <label className="mt-5 inline-block cursor-pointer rounded-full border border-white/16 bg-white/[0.05] px-5 py-2 text-xs text-white/75 transition-all duration-300 hover:border-white/28 hover:bg-white/10">
+                  파일 선택
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+              </>
+            )}
+          </div>
+
+          {/* 서명 입력란 — 업로드 후에만 활성화 */}
+          {uploadPreviewUrl && (
+          <div className="mt-5">
+            <label className="mb-1 flex items-center gap-2 text-xs text-white/70">
+              <PenLine size={13} className="text-[#b45d69]" />
+              <span>The Artist&apos;s Pen (선택 사항)</span>
+            </label>
+            <div className="relative max-w-md">
+              <input
+                type="text"
+                value={signatureText}
+                onChange={(e) => setSignatureText(e.target.value)}
+                placeholder="작품에 새길 서명을 입력하세요 (예: Masterpiece by Picasso)"
+                className="w-full border-b border-white/20 bg-transparent px-0 pb-2 text-sm text-white placeholder:text-white/30 focus:border-[#b45d69] focus:outline-none"
+              />
+            </div>
+          </div>
+          )}
+
+          {/* Generate button — 스타일 선택 완료 시(Step 3) 강조 */}
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <motion.button
+              type="button"
+              onClick={handleGenerate}
+              disabled={!canGenerate}
+              whileHover={canGenerate ? { scale: 1.03 } : undefined}
+              animate={
+                canGenerate
+                  ? {
+                      boxShadow: [
+                        "0 0 20px rgba(218,165,32,0.25), 0 0 40px rgba(128,8,8,0.2)",
+                        "0 0 28px rgba(218,165,32,0.4), 0 0 50px rgba(128,8,8,0.3)",
+                        "0 0 20px rgba(218,165,32,0.25), 0 0 40px rgba(128,8,8,0.2)",
+                      ],
+                    }
+                  : {}
+              }
+              transition={canGenerate ? { duration: 2, repeat: Infinity, ease: "easeInOut" } : {}}
+              className={`rounded-full px-10 py-3 text-sm font-semibold tracking-wide transition-all duration-500 ${
+                canGenerate
+                  ? "border-2 border-[#DAA520]/70 bg-[#2a0f15]/95 text-[#f5ccd3] hover:bg-[#38111b]"
+                  : "gold-border-glow cursor-not-allowed border-white/16 bg-white/[0.05] text-white/36"
+              }`}
+            >
+              마스터피스 생성하기
+            </motion.button>
+            <p className="text-xs text-white/42">
+              {canGenerate
+                ? `${selected?.title ?? ""} 스타일로 생성합니다 — 준비 완료`
+                : !uploadPreviewUrl
+                  ? "사진을 업로드하면 활성화됩니다"
+                  : "스타일을 선택해주세요"}
+            </p>
+          </div>
+        </motion.section>
+
+        {/* ══════════════════════════════════════
+            3. Style Section (스타일 선택) — 사진 업로드 후 활성화
+        ══════════════════════════════════════ */}
+        <div
+          className={`transition-opacity duration-300 ${!uploadPreviewUrl ? "pointer-events-none opacity-30" : ""}`}
+        >
+        {/* Masterpiece Canvas (반응형 가로 꽉 참) */}
         <motion.section
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
@@ -338,9 +561,9 @@ export default function HomePage() {
           <motion.div
             animate={{
               boxShadow: [
-                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
-                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 55px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0.22)`,
-                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
+                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${!selected || selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
+                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 55px rgba(${!selected || selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0.22)`,
+                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${!selected || selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
               ],
             }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
@@ -351,19 +574,19 @@ export default function HomePage() {
               {/* Gradient background (always present, transitions between styles) */}
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={selectedId + "-bg"}
+                  key={selectedId ?? "none"}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.4 }}
                   className="absolute inset-0"
-                  style={{ background: selected.placeholderGradient }}
+                  style={{ background: selected?.placeholderGradient ?? "radial-gradient(ellipse 50% 50% at 50% 50%, #1a0c07 0%, #0d0808 100%)" }}
                 />
               </AnimatePresence>
 
               {/* Sample image — object-contain prevents cropping */}
               <AnimatePresence mode="wait">
-                {selected.imageSrc && (
+                {selected?.imageSrc && (
                   <motion.img
                     key={selectedId + "-img"}
                     src={selected.imageSrc}
@@ -380,15 +603,18 @@ export default function HomePage() {
               {/* Vignette — lighter so image details show */}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-              {/* Placeholder label */}
-              {!selected.imageSrc && (
+              {/* Placeholder label — 스타일 미선택 시 */}
+              {!selected?.imageSrc && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <p className="text-[11px] tracking-[0.3em] text-white/14 uppercase">Sample Coming Soon</p>
+                  <p className="text-[11px] tracking-[0.3em] text-white/14 uppercase">
+                    {selected ? "Sample Coming Soon" : "스타일을 선택해주세요"}
+                  </p>
                 </div>
               )}
 
               {/* Museum plaque */}
               <AnimatePresence mode="wait">
+                {selected && (
                 <motion.div
                   key={selectedId + "-plaque"}
                   initial={{ opacity: 0, y: 6 }}
@@ -405,6 +631,7 @@ export default function HomePage() {
                   </div>
                   <p className="font-mono text-[10px] text-white/30">{selected.num}</p>
                 </motion.div>
+                )}
               </AnimatePresence>
             </motion.div>
           </div>
@@ -466,6 +693,7 @@ export default function HomePage() {
           className="mx-auto mb-10 max-w-6xl"
         >
           <AnimatePresence mode="wait">
+            {selected && (
             <motion.div
               key={selectedId + "-note"}
               initial={{ opacity: 0, y: 14 }}
@@ -492,140 +720,12 @@ export default function HomePage() {
                 {selected.concept === "atelier" ? "The Royal Atelier" : "Cine-Matic Paw"}
               </p>
             </motion.div>
+            )}
           </AnimatePresence>
         </motion.section>
 
-        {/* ══════════════════════════════════════
-            5. Upload Section
-        ══════════════════════════════════════ */}
-        <motion.section
-          id="upload-section"
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5 }}
-          className="mx-auto max-w-3xl rounded-[1.8rem] border border-white/[0.09] bg-black/22 px-6 py-8 sm:px-8"
-        >
-          {/* Header */}
-          <div className="mb-6">
-            <p className="font-serif-display text-xl text-[#f8dde2]">스튜디오 캔버스 테이블</p>
-            <p className="lux-copy mt-1 text-xs text-white/50">
-              <span className="text-[#f0cad0]">{selected.title}</span> 스타일로 기록할 사진을 업로드하세요.
-            </p>
-          </div>
-
-          {/* 업로드 영역 — 처음엔 넓게, 업로드 후 작은 썸네일로 축소 */}
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragOver(true);
-            }}
-            onDragLeave={() => setIsDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsDragOver(false);
-              handleFileSelection(e.dataTransfer.files?.[0] ?? null);
-            }}
-            className={`relative flex rounded-xl border px-5 py-10 text-center transition-all duration-500 ${
-              uploadPreviewUrl
-                ? "min-h-0 flex-row items-center justify-start gap-4 py-5"
-                : "min-h-[200px] flex-col items-center justify-center"
-            } ${
-              isDragOver
-                ? "border-[#9b3a49]/80 bg-[linear-gradient(165deg,rgba(128,8,8,0.2),rgba(20,16,19,0.38))]"
-                : "border-[#800808]/22 bg-[linear-gradient(165deg,rgba(28,14,17,0.5),rgba(10,10,12,0.45))]"
-            }`}
-          >
-            {uploadPreviewUrl ? (
-              /* 업로드 후: 작은 썸네일로 표시 (이미지 자체는 그대로, 보여주기만 축소) */
-              <label className="flex cursor-pointer items-center gap-4">
-                <div
-                  className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-white/[0.15] bg-black/30 shadow-md"
-                  style={{ backgroundImage: `url('${uploadPreviewUrl}')`, backgroundSize: "cover", backgroundPosition: "center" }}
-                />
-                <div className="text-left">
-                  <span className="inline-block rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs text-white/90 transition hover:border-white/35 hover:bg-white/10">
-                    다른 사진으로 변경
-                  </span>
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
-                />
-              </label>
-            ) : (
-              <>
-                <motion.div
-                  aria-hidden
-                  animate={
-                    isDragOver
-                      ? { opacity: [0.1, 0.3, 0.1], scale: [0.98, 1.02, 0.98] }
-                      : { opacity: 0, scale: 1 }
-                  }
-                  transition={{ duration: 1.2, repeat: isDragOver ? Infinity : 0, ease: "easeInOut" }}
-                  className="pointer-events-none absolute inset-3 rounded-lg bg-[radial-gradient(circle_at_30%_22%,rgba(146,36,51,0.28),transparent_56%)]"
-                />
-                <div className="pointer-events-none absolute inset-4 rounded-md border border-white/[0.08]" />
-
-                <p className="lux-copy text-sm text-white/80">작품으로 만들 사진을 이곳에 놓아주세요</p>
-                <p className="mt-2 text-xs text-white/44">드래그 앤 드롭 또는 직접 파일 선택</p>
-
-                <label className="mt-5 inline-block cursor-pointer rounded-full border border-white/16 bg-white/[0.05] px-5 py-2 text-xs text-white/75 transition-all duration-300 hover:border-white/28 hover:bg-white/10">
-                  파일 선택
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
-                  />
-                </label>
-              </>
-            )}
-          </div>
-
-          {/* 서명 입력란 — 업로드 후에만 활성화 */}
-          {uploadPreviewUrl && (
-          <div className="mt-5">
-            <label className="mb-1 flex items-center gap-2 text-xs text-white/70">
-              <PenLine size={13} className="text-[#b45d69]" />
-              <span>The Artist&apos;s Pen (선택 사항)</span>
-            </label>
-            <div className="relative max-w-md">
-              <input
-                type="text"
-                value={signatureText}
-                onChange={(e) => setSignatureText(e.target.value)}
-                placeholder="작품에 새길 서명을 입력하세요 (예: Masterpiece by Picasso)"
-                className="w-full border-b border-white/20 bg-transparent px-0 pb-2 text-sm text-white placeholder:text-white/30 focus:border-[#b45d69] focus:outline-none"
-              />
-            </div>
-          </div>
-          )}
-
-          {/* Generate button */}
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <motion.button
-              type="button"
-              onClick={handleGenerate}
-              disabled={!canGenerate}
-              whileHover={canGenerate ? { scale: 1.02 } : undefined}
-              className={`gold-border-glow rounded-full px-10 py-3 text-sm font-semibold tracking-wide transition-all duration-500 ${
-                canGenerate
-                  ? "bg-[#2a0f15]/90 text-[#f5ccd3] hover:bg-[#38111b]"
-                  : "cursor-not-allowed border-white/16 bg-white/[0.05] text-white/36"
-              }`}
-            >
-              마스터피스 생성하기
-            </motion.button>
-            <p className="text-xs text-white/42">
-              {canGenerate
-                ? `${selected.title} 스타일로 생성합니다 — 준비 완료`
-                : "사진을 업로드하면 활성화됩니다"}
-            </p>
-          </div>
-        </motion.section>
+        </div>
+        {/* End of Style Section wrapper (opacity-30 when no upload) */}
 
       </div>
     </main>
