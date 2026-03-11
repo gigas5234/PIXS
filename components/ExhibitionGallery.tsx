@@ -31,7 +31,7 @@ const ALL_STYLES: StyleDef[] = [
     title: "Rembrandt",
     subtitle: "빛과 그림자의 거장",
     concept: "atelier",
-    imageSrc: "/gallery/rembrandt_sample.png",
+    imageSrc: "/gallery/pixs-masterpiece-rembrandt.png",
     placeholderGradient: "radial-gradient(ellipse at 35% 25%, #3d1a0c 0%, #1a0c07 50%, #0d0808 100%)",
     pinLight: "rgba(139,42,26,0.65)",
     selectedBorder: "1px solid rgba(128,8,8,0.9)",
@@ -45,7 +45,7 @@ const ALL_STYLES: StyleDef[] = [
     title: "Vermeer",
     subtitle: "고요한 자연광의 정수",
     concept: "atelier",
-    imageSrc: null, // TODO: "/gallery/vermeer_sample.png"
+    imageSrc: "/gallery/pixs-masterpiece-vermeer.png",
     placeholderGradient: "radial-gradient(ellipse at 65% 30%, #1a2235 0%, #0e1522 50%, #0a0d16 100%)",
     pinLight: "rgba(107,138,178,0.6)",
     selectedBorder: "1px solid rgba(128,8,8,0.9)",
@@ -59,7 +59,7 @@ const ALL_STYLES: StyleDef[] = [
     title: "Van Gogh",
     subtitle: "역동적 붓 터치의 긴장감",
     concept: "atelier",
-    imageSrc: null, // TODO: "/gallery/vangogh_sample.png"
+    imageSrc: "/gallery/pixs-masterpiece-van-gogh.png",
     placeholderGradient: "radial-gradient(ellipse at 40% 55%, #2a1f08 0%, #1a1005 50%, #0d0d07 100%)",
     pinLight: "rgba(196,160,32,0.55)",
     selectedBorder: "1px solid rgba(128,8,8,0.9)",
@@ -73,7 +73,7 @@ const ALL_STYLES: StyleDef[] = [
     title: "Renaissance",
     subtitle: "왕실의 품격, 정밀한 구도",
     concept: "atelier",
-    imageSrc: null, // TODO: "/gallery/renaissance_sample.png"
+    imageSrc: "/gallery/pixs-masterpiece-renaissance.png",
     placeholderGradient: "radial-gradient(ellipse at 55% 22%, #2d1c10 0%, #180e08 50%, #0f0b0a 100%)",
     pinLight: "rgba(184,134,11,0.5)",
     selectedBorder: "1px solid rgba(128,8,8,0.9)",
@@ -88,7 +88,7 @@ const ALL_STYLES: StyleDef[] = [
     title: "Heroic",
     subtitle: "강렬한 히어로 조명의 중심",
     concept: "cinematic",
-    imageSrc: "/gallery/heroic_sample.png",
+    imageSrc: "/gallery/pixs-masterpiece-marvel-hero.png",
     placeholderGradient: "radial-gradient(ellipse at 25% 50%, #0f1835 0%, #080e20 50%, #060709 100%)",
     pinLight: "rgba(75,125,212,0.65)",
     selectedBorder: "1px solid rgba(75,125,212,0.9)",
@@ -102,7 +102,7 @@ const ALL_STYLES: StyleDef[] = [
     title: "Fairytale",
     subtitle: "따뜻한 시네마틱 실사 감성",
     concept: "cinematic",
-    imageSrc: null, // TODO: "/gallery/fairytale_sample.png"
+    imageSrc: "/gallery/pixs-masterpiece-disney-live-action.png",
     placeholderGradient: "radial-gradient(ellipse at 60% 30%, #201035 0%, #140a25 50%, #0a0810 100%)",
     pinLight: "rgba(180,100,220,0.55)",
     selectedBorder: "1px solid rgba(180,100,220,0.85)",
@@ -116,7 +116,7 @@ const ALL_STYLES: StyleDef[] = [
     title: "Cyberpunk",
     subtitle: "네온 대비와 미래 도시 무드",
     concept: "cinematic",
-    imageSrc: null, // TODO: "/gallery/cyberpunk_sample.png"
+    imageSrc: "/gallery/pixs-masterpiece-cyberpunk.png",
     placeholderGradient: "radial-gradient(ellipse at 20% 70%, #001828 0%, #000e1a 50%, #010508 100%)",
     pinLight: "rgba(0,200,255,0.55)",
     selectedBorder: "1px solid rgba(0,200,255,0.8)",
@@ -130,7 +130,7 @@ const ALL_STYLES: StyleDef[] = [
     title: "Western Noir",
     subtitle: "드라마틱 역광의 대서사",
     concept: "cinematic",
-    imageSrc: null, // TODO: "/gallery/western_sample.png"
+    imageSrc: "/gallery/pixs-masterpiece-western.png",
     placeholderGradient: "radial-gradient(ellipse at 50% 40%, #1e1508 0%, #120c04 50%, #080604 100%)",
     pinLight: "rgba(200,154,60,0.5)",
     selectedBorder: "1px solid rgba(200,154,60,0.8)",
