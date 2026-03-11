@@ -55,7 +55,8 @@ export function ResultView({ styleId }: ResultViewProps) {
   const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
 
   const baseImageUrl = currentResultUrl ?? resultImageUrlFromStorage ?? uploadPreviewUrl;
-  const styleTitle = currentStyleTitle || (typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null) ?? "선택 스타일";
+  const storedStyleTitle = typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null;
+  const styleTitle = currentStyleTitle || storedStyleTitle || "선택 스타일";
   // 화면에 보여줄 이미지는 AI가 생성한 원본
   const displayImageUrl = baseImageUrl;
   // 다운로드/공유용 이미지는 서명이 합성된 버전이 있으면 그것을 사용
