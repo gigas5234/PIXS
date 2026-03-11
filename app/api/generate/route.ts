@@ -199,7 +199,8 @@ export async function POST(request: NextRequest) {
     debug.push({
       step: "call_edit_image",
       detail: {
-        model: "imagen-3.0-capability-001",
+        // Vertex AI: use Gemini Flash Image model instead of Imagen 3
+        model: "gemini-3.1-flash-image",
         project: projectId,
         location,
         referenceId: REFERENCE_ID,
@@ -220,7 +221,8 @@ export async function POST(request: NextRequest) {
     };
 
     const response = await ai.models.editImage({
-      model: "imagen-3.0-capability-001",
+      // Switch from Imagen 3 to Gemini 3 Flash Image
+      model: "gemini-3.1-flash-image",
       prompt,
       referenceImages: [subjectRef],
       config: editConfig,
