@@ -1,0 +1,9 @@
+export const REMBRANDT_PROMPT = `A master-level oil painting of the Russian Blue cat from image_7.png, presented as a full-body, high-resolution portrait. Strictly exclude all artist's tools, easels, paintbrushes, and other objects from the scene. The background is a complete, absolute, seamless dark black void, completely dark and devoid of any artist's materials, extending indefinitely. All attention is focused on the cat, seated in a formal, elegant upright 'royal' pose, looking directly and confidently at the viewer. It wears the intricate, delicate white lace ruffle collar with the gold pendant seen in image_9.png, as well as the dark, deep royal purple velvet cloak with gold thread swirling vine embroidery from image_9.png. The cloak drapes gracefully around its entire seated form, pooling subtly around its paws. The cat sits centered on a clean, subtly textured, dark grey velvet-covered studio prop (not a Complex damask cushion), which rests on the seamless black void. The lighting is pure, intense, classical Rembrandt lighting (chiaroscuro), with a single, powerful light source from the upper left dramatically illuminating one side of the cat's face and shoulders, creating a classic illuminated triangle on the shadowed cheek, while casting the other half of the cat's body and the deep studio environment into velvety, deep shadows that merge with the dark background. The fur texture is highly defined by rich, textured impasto oil paint brushstrokes throughout the cat's entire form, matching the quality of image_5.png. The striking green color of the eyes is intensified, with focused reflections. The entire image has the tactile texture of a masterwork on a canvas.`;
+
+export const STYLE_PROMPTS: Record<string, string> = {
+  rembrandt: REMBRANDT_PROMPT,
+};
+
+export function getPromptByStyle(styleId: string): string | null {
+  return STYLE_PROMPTS[styleId] ?? null;
+}
