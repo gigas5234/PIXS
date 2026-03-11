@@ -2,45 +2,163 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
-import { VerticalArtSlider } from "@/components/VerticalArtSlider";
-import { ExhibitionGallery } from "@/components/ExhibitionGallery";
 import { getPromptFileByStyle } from "@/lib/prompts/style-prompts";
 
-type StyleItem = {
+/* ─────────────────────────────────────────────
+   Style data — imageSrc: null = placeholder
+   To add a sample, set: imageSrc: "/gallery/<name>_sample.png"
+───────────────────────────────────────────── */
+type StyleDef = {
   id: string;
+  num: string;
   title: string;
+  subtitle: string;
+  concept: "atelier" | "cinematic";
+  imageSrc: string | null;
+  placeholderGradient: string;
+  note: string;
 };
 
-const STYLE_TITLES: Record<string, string> = {
-  rembrandt: "Rembrandt",
-  vermeer: "Vermeer",
-  "van-gogh": "Van Gogh",
-  picasso: "Renaissance",
-  "marvel-hero": "Heroic",
-  "disney-live-action": "Fairytale",
-  cyberpunk: "Cyberpunk",
-  western: "Western Noir",
+const STYLES: StyleDef[] = [
+  {
+    id: "rembrandt",
+    num: "01",
+    title: "Rembrandt",
+    subtitle: "빛과 그림자의 거장",
+    concept: "atelier",
+    imageSrc: "/gallery/rembrandt_sample.png",
+    placeholderGradient: "radial-gradient(ellipse at 35% 25%, #3d1a0c 0%, #1a0c07 50%, #0d0808 100%)",
+    note: "거장의 빛과 어둠, 키아로스쿠로 기법을 재현합니다. 한 줄기 강렬한 빛이 반려동물의 깊은 눈빛에 머물고, 나머지는 벨벳 같은 어둠 속으로 스며들어 오직 존재의 숭고함에만 집중하게 합니다.",
+  },
+  {
+    id: "vermeer",
+    num: "02",
+    title: "Vermeer",
+    subtitle: "고요한 자연광의 정수",
+    concept: "atelier",
+    imageSrc: null, // TODO: "/gallery/vermeer_sample.png"
+    placeholderGradient: "radial-gradient(ellipse at 65% 30%, #1a2235 0%, #0e1522 50%, #0a0d16 100%)",
+    note: "북유럽의 진주 같은 온화한 측면광을 담아냅니다. 창가에서 스며드는 부드러운 빛이 털의 질감을 타고 정교하게 흐르며, 평범한 일상의 찰나를 정지된 명화의 한 장면으로 기록합니다.",
+  },
+  {
+    id: "van-gogh",
+    num: "03",
+    title: "Van Gogh",
+    subtitle: "역동적 붓 터치의 긴장감",
+    concept: "atelier",
+    imageSrc: null, // TODO: "/gallery/vangogh_sample.png"
+    placeholderGradient: "radial-gradient(ellipse at 40% 55%, #2a1f08 0%, #1a1005 50%, #0d0d07 100%)",
+    note: "강렬하게 요동치는 임파스토 붓 터치와 생동감 넘치는 보색 대비를 입힙니다. 반려동물의 넘치는 생명력을 후기 인상주의의 열정적인 질감으로 재해석하여 캔버스 위에 뜨겁게 각인합니다.",
+  },
+  {
+    id: "picasso",
+    num: "04",
+    title: "Renaissance",
+    subtitle: "왕실의 품격, 정밀한 구도",
+    concept: "atelier",
+    imageSrc: null, // TODO: "/gallery/renaissance_sample.png"
+    placeholderGradient: "radial-gradient(ellipse at 55% 22%, #2d1c10 0%, #180e08 50%, #0f0b0a 100%)",
+    note: "대상을 해체하고 재조합하는 입체주의적 시선을 담아냅니다. 반려동물의 고유한 특징을 대담한 선과 기하학적 면으로 표현하여, 세상 어디에도 없는 독창적인 현대 미술 작품으로 승화시킵니다.",
+  },
+  {
+    id: "marvel-hero",
+    num: "05",
+    title: "Heroic",
+    subtitle: "강렬한 히어로 조명의 중심",
+    concept: "cinematic",
+    imageSrc: "/gallery/heroic_sample.png",
+    placeholderGradient: "radial-gradient(ellipse at 25% 50%, #0f1835 0%, #080e20 50%, #060709 100%)",
+    note: "할리우드 블록버스터의 압도적인 시네마틱 조명과 하이테크 질감을 결합합니다. 웅장한 서사의 중심에 선 우리 아이를 세상의 위협으로부터 지켜내는 강인한 영웅의 모습으로 재탄생시킵니다.",
+  },
+  {
+    id: "disney-live-action",
+    num: "06",
+    title: "Fairytale",
+    subtitle: "따뜻한 시네마틱 실사 감성",
+    concept: "cinematic",
+    imageSrc: null, // TODO: "/gallery/fairytale_sample.png"
+    placeholderGradient: "radial-gradient(ellipse at 60% 30%, #201035 0%, #140a25 50%, #0a0810 100%)",
+    note: "실사 영화 속 한 장면 같은 몽환적인 마법의 순간을 포착합니다. 따뜻하고 부드러운 글로우 조명과 동화적 상상력을 더해, 세상에서 가장 사랑스러운 이야기 속 주인공으로 기록합니다.",
+  },
+  {
+    id: "cyberpunk",
+    num: "07",
+    title: "Cyberpunk",
+    subtitle: "네온 대비와 미래 도시 무드",
+    concept: "cinematic",
+    imageSrc: null, // TODO: "/gallery/cyberpunk_sample.png"
+    placeholderGradient: "radial-gradient(ellipse at 20% 70%, #001828 0%, #000e1a 50%, #010508 100%)",
+    note: "미래지향적인 네온 블루와 핑크 조명을 통해 감각적인 디지털 미학을 선사합니다. 홀로그램적 반사와 차가운 금속 질감이 어우러진 미래 도시의 세련된 감성으로 반려동물을 표현합니다.",
+  },
+  {
+    id: "western",
+    num: "08",
+    title: "Western Noir",
+    subtitle: "드라마틱 역광의 대서사",
+    concept: "cinematic",
+    imageSrc: null, // TODO: "/gallery/western_sample.png"
+    placeholderGradient: "radial-gradient(ellipse at 50% 40%, #1e1508 0%, #120c04 50%, #080604 100%)",
+    note: "거친 황야의 고독과 클래식 시네마의 묵직한 명암 대비를 재현합니다. 빛바랜 세피아 톤과 거친 필름 입자를 통해 반려동물의 묵직한 존재감과 서부 영화 속 주인공 같은 카리스마를 강조합니다.",
+  },
+];
+
+/* ─────────────────────────────────────────────
+   Dock Card
+───────────────────────────────────────────── */
+type DockCardProps = {
+  style: StyleDef;
+  isSelected: boolean;
+  onClick: () => void;
 };
 
+function DockCard({ style, isSelected, onClick }: DockCardProps) {
+  return (
+    <motion.button
+      type="button"
+      onClick={onClick}
+      whileHover={{ y: -3, scale: 1.03 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ duration: 0.18 }}
+      className={`relative w-[92px] flex-none rounded-xl border p-3 text-left transition-[border-color,box-shadow,background-color] duration-300 ${
+        isSelected
+          ? "border-[#800808]/80 bg-[#800808]/12 shadow-[0_0_22px_rgba(128,8,8,0.28)]"
+          : "border-white/[0.07] bg-white/[0.03] hover:border-white/16 hover:bg-white/[0.05]"
+      }`}
+    >
+      <AnimatePresence>
+        {isSelected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="pointer-events-none absolute inset-0 rounded-xl bg-[radial-gradient(ellipse_at_50%_0%,rgba(128,8,8,0.22),transparent_70%)]"
+          />
+        )}
+      </AnimatePresence>
+      <p className="font-mono text-[9px] tracking-[0.2em] text-white/32">{style.num}</p>
+      <p className="font-serif-display mt-1.5 text-[13px] leading-tight text-white">{style.title}</p>
+      <p className="lux-copy mt-1 line-clamp-2 text-[10px] text-white/46">{style.subtitle}</p>
+    </motion.button>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Main Page
+───────────────────────────────────────────── */
 export default function HomePage() {
   const router = useRouter();
-  const [selectedStyleId, setSelectedStyleId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string>("rembrandt");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const springX = useSpring(pointerX, { stiffness: 70, damping: 20, mass: 0.6 });
-  const springY = useSpring(pointerY, { stiffness: 70, damping: 20, mass: 0.6 });
-  const orbTransform = useMotionTemplate`translate3d(${springX}px, ${springY}px, 0)`;
-
-  const canGenerate = Boolean(selectedStyleId && uploadedFile);
-  const selectedTitle = selectedStyleId ? (STYLE_TITLES[selectedStyleId] ?? selectedStyleId) : null;
+  const selected = STYLES.find((s) => s.id === selectedId) ?? STYLES[0];
+  const canGenerate = Boolean(uploadedFile);
 
   const handleFileSelection = (file: File | null) => {
     if (!file) return;
@@ -55,19 +173,17 @@ export default function HomePage() {
   const handleGenerate = () => {
     if (!canGenerate || isGenerating) return;
     setIsGenerating(true);
-    const promptTemplate = selectedStyleId ? getPromptFileByStyle(selectedStyleId) : null;
+    const promptTemplate = getPromptFileByStyle(selectedId);
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("pixs:selectedStyle", selectedStyleId ?? "");
-      sessionStorage.setItem("pixs:selectedStyleTitle", selectedTitle ?? "");
+      sessionStorage.setItem("pixs:selectedStyle", selectedId);
+      sessionStorage.setItem("pixs:selectedStyleTitle", selected.title);
       sessionStorage.setItem("pixs:promptTemplate", promptTemplate ?? "");
-      if (uploadPreviewUrl) {
-        sessionStorage.setItem("pixs:uploadPreviewUrl", uploadPreviewUrl);
-      }
+      if (uploadPreviewUrl) sessionStorage.setItem("pixs:uploadPreviewUrl", uploadPreviewUrl);
     }
     const delay = 3000 + Math.floor(Math.random() * 2000);
     window.setTimeout(() => {
       setIsGenerating(false);
-      router.push(`/result?style=${selectedStyleId ?? ""}`);
+      router.push(`/result?style=${selectedId}`);
     }, delay);
   };
 
@@ -78,191 +194,304 @@ export default function HomePage() {
   }, [uploadPreviewUrl]);
 
   return (
-    <main
-      className="relative min-h-screen overflow-hidden px-4 pb-24 pt-8 sm:px-6 lg:px-10"
-      onMouseMove={(event) => {
-        const x = (event.clientX / window.innerWidth - 0.5) * 22;
-        const y = (event.clientY / window.innerHeight - 0.5) * 22;
-        pointerX.set(x);
-        pointerY.set(y);
-      }}
-    >
+    <main className="relative min-h-screen overflow-x-hidden bg-[#080808] text-white">
       <LoadingOverlay isVisible={isGenerating} />
 
-      {/* ── Hero ── */}
-      <motion.section
-        initial={{ opacity: 0, y: 26 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-white/10 bg-black/22 px-5 py-10 sm:px-8 lg:px-12"
-      >
-        <div className="noise-overlay" />
-        <motion.div
-          style={{ transform: orbTransform }}
-          className="pointer-events-none absolute -left-12 -top-16 h-56 w-56 rounded-full bg-[#6f1b28]/30 blur-3xl"
-        />
-        <motion.div
-          style={{ transform: orbTransform }}
-          className="pointer-events-none absolute -right-14 top-1/4 h-72 w-72 rounded-full bg-[#8f2b39]/20 blur-3xl"
-        />
+      {/* Ambient concept glow — shifts between wine (atelier) and blue (cinematic) */}
+      <motion.div
+        className="pointer-events-none fixed inset-0 z-0"
+        animate={{
+          background:
+            selected.concept === "atelier"
+              ? "radial-gradient(ellipse 75% 60% at 22% 32%, rgba(94,11,21,0.16), transparent 60%)"
+              : "radial-gradient(ellipse 75% 60% at 78% 32%, rgba(18,42,100,0.16), transparent 60%)",
+        }}
+        transition={{ duration: 1.4, ease: "easeInOut" }}
+      />
 
-        <motion.div
+      <div className="relative z-10 px-4 pb-28 pt-8 sm:px-6 lg:px-10">
+
+        {/* ══════════════════════════════════════
+            1. Hero
+        ══════════════════════════════════════ */}
+        <motion.header
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10 mb-14 text-center"
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mb-10 max-w-6xl text-center"
         >
-          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#800808]/45 bg-[#800808]/20 px-4 py-1.5 text-xs tracking-[0.2em] text-[#e3aab3] uppercase">
-            <Sparkles size={14} />
+          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#800808]/45 bg-[#800808]/16 px-4 py-1.5 text-[11px] tracking-[0.22em] text-[#e3aab3] uppercase">
+            <Sparkles size={13} />
             PIXS Studio
           </p>
-          <h1 className="font-serif-display text-3xl tracking-[0.08em] text-[#f8ebee] sm:text-5xl lg:text-6xl">
+          <h1 className="font-serif-display text-3xl tracking-[0.06em] text-[#f8ebee] sm:text-5xl lg:text-6xl">
             반려동물, 그 영원한 기록.
           </h1>
-          <p className="font-serif-display mx-auto mt-7 max-w-3xl text-lg leading-relaxed tracking-[0.02em] text-[#f1d8dd]/92 sm:text-2xl">
+          <p className="font-serif-display mx-auto mt-5 max-w-xl text-base leading-relaxed text-[#f1d8dd]/78 sm:text-xl">
             거장의 붓 터치로 탄생하는 단 하나의 마스터피스.
           </p>
-        </motion.div>
+        </motion.header>
 
-        {/* Before / After slider */}
-        <motion.div
+        {/* ══════════════════════════════════════
+            2. Masterpiece Canvas + Stylist's Note
+        ══════════════════════════════════════ */}
+        <motion.section
           initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
-          className="relative z-10"
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mb-8 max-w-6xl"
         >
-          <VerticalArtSlider
-            originalImage="/gallery/rembrandt_sample.png"
-            masterpieceImage="/gallery/heroic_sample.png"
-          />
-        </motion.div>
+          <div className="grid items-center gap-6 lg:grid-cols-[3fr_2fr]">
 
-        {/* Brand statement */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10 my-16 rounded-2xl border border-white/10 bg-black/24 px-6 py-9 text-center"
-        >
-          <p className="font-serif-display mx-auto max-w-4xl text-xl leading-relaxed text-[#f4e4e8] sm:text-2xl">
-            PIXS는 도구가 아닙니다. 우리 아이의 영혼을 예술로 빚어내는 아틀리에입니다.
-          </p>
-        </motion.div>
-      </motion.section>
-
-      {/* ── Exhibition Gallery ── */}
-      <section className="mx-auto mt-16 max-w-6xl lg:pr-16">
-        <ExhibitionGallery
-          selectedStyleId={selectedStyleId}
-          onSelectStyle={setSelectedStyleId}
-          uploadSectionId="upload-section"
-        />
-      </section>
-
-      {/* ── Upload Section ── */}
-      <motion.section
-        id="upload-section"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.25 }}
-        transition={{ duration: 0.55 }}
-        className="mx-auto mt-8 max-w-3xl rounded-[1.8rem] border border-white/10 bg-black/26 px-6 py-8 sm:px-8"
-      >
-        {/* Header */}
-        <div className="mb-6">
-          <p className="font-serif-display text-xl text-[#f8dde2]">스튜디오 캔버스 테이블</p>
-          <p className="lux-copy mt-1 text-xs text-white/55">
-            {selectedTitle ? (
-              <>
-                <span className="text-[#f0cad0]">{selectedTitle}</span> 스타일로 기록할 사진을 업로드하세요.
-              </>
-            ) : (
-              "위에서 스타일을 먼저 선택한 뒤 사진을 업로드하세요."
-            )}
-          </p>
-        </div>
-
-        {/* Drop zone */}
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragOver(true);
-          }}
-          onDragLeave={() => setIsDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setIsDragOver(false);
-            handleFileSelection(e.dataTransfer.files?.[0] ?? null);
-          }}
-          className={`relative rounded-xl border px-5 py-10 text-center transition-all duration-500 ${
-            isDragOver
-              ? "border-[#9b3a49]/80 bg-[linear-gradient(165deg,rgba(128,8,8,0.22),rgba(20,16,19,0.4))]"
-              : "border-[#800808]/28 bg-[linear-gradient(165deg,rgba(30,15,18,0.5),rgba(11,11,14,0.45))]"
-          }`}
-        >
-          <motion.div
-            aria-hidden
-            animate={
-              isDragOver
-                ? { opacity: [0.12, 0.32, 0.12], scale: [0.98, 1.02, 0.98] }
-                : { opacity: 0, scale: 1 }
-            }
-            transition={{ duration: 1.2, repeat: isDragOver ? Infinity : 0, ease: "easeInOut" }}
-            className="pointer-events-none absolute inset-3 rounded-lg bg-[radial-gradient(circle_at_30%_22%,rgba(146,36,51,0.32),transparent_56%)]"
-          />
-          <div className="pointer-events-none absolute inset-4 rounded-md border border-white/10" />
-
-          <p className="lux-copy text-sm text-white/82">작품으로 만들 사진을 이곳에 놓아주세요</p>
-          <p className="mt-2 text-xs text-white/50">드래그 앤 드롭 또는 직접 파일 선택</p>
-
-          <label className="mt-5 inline-block cursor-pointer rounded-full border border-white/18 bg-white/5 px-5 py-2 text-xs text-white/78 transition-all duration-300 hover:bg-white/10">
-            파일 선택
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
-            />
-          </label>
-
-          {uploadedFile && (
-            <p className="mt-3 text-xs text-[#efbec7]">업로드됨: {uploadedFile.name}</p>
-          )}
-        </div>
-
-        {/* Preview */}
-        {uploadPreviewUrl && (
-          <div className="mt-4 rounded-xl border border-white/10 bg-black/35 p-2">
+            {/* ── Canvas ── */}
             <div
-              className="aspect-[4/3] rounded-lg bg-cover bg-center"
-              style={{ backgroundImage: `url('${uploadPreviewUrl}')` }}
-            />
-          </div>
-        )}
+              className="relative aspect-[4/3] min-h-[240px] overflow-hidden rounded-2xl border border-white/[0.07]"
+              style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 4px 80px rgba(0,0,0,0.7)" }}
+            >
+              <div className="noise-overlay" />
 
-        {/* Generate button */}
-        <div className="mt-8 flex flex-col items-center gap-3">
-          <motion.button
-            type="button"
-            onClick={handleGenerate}
-            disabled={!canGenerate || isGenerating}
-            whileHover={canGenerate ? { scale: 1.02 } : undefined}
-            className={`gold-border-glow rounded-full px-10 py-3 text-sm font-semibold tracking-wide transition-all duration-500 ${
-              canGenerate
-                ? "bg-[#2a0f15]/90 text-[#f5ccd3] hover:bg-[#38111b]"
-                : "cursor-not-allowed border-white/18 bg-white/6 text-white/40"
+              {/* Animated background: image or gradient */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedId}
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.03 }}
+                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0"
+                  style={
+                    selected.imageSrc
+                      ? {
+                          backgroundImage: `url('${selected.imageSrc}')`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }
+                      : { background: selected.placeholderGradient }
+                  }
+                />
+              </AnimatePresence>
+
+              {/* Vignette overlays */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
+
+              {/* Placeholder label */}
+              {!selected.imageSrc && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <p className="text-[11px] tracking-[0.3em] text-white/14 uppercase">Sample Coming Soon</p>
+                </div>
+              )}
+
+              {/* Museum plaque (animated with canvas) */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedId + "-plaque"}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.35, delay: 0.15 }}
+                  className="absolute bottom-4 left-5 right-5 flex items-end justify-between"
+                >
+                  <div>
+                    <p className="font-serif-display text-sm font-medium leading-snug text-white/92">
+                      {selected.title}
+                    </p>
+                    <p className="lux-copy mt-0.5 text-[10px] text-white/45">{selected.subtitle}</p>
+                  </div>
+                  <p className="font-mono text-[10px] text-white/30">{selected.num}</p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* ── Stylist's Note ── */}
+            <div className="py-2 lg:py-4 lg:pl-2">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedId + "-note"}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <p className="mb-3 text-[10px] tracking-[0.32em] text-[#d2a2aa] uppercase">
+                    The Stylist&apos;s Note
+                  </p>
+                  <h2 className="font-serif-display text-3xl leading-tight text-[#f7e0e5] lg:text-[2.25rem]">
+                    {selected.title}
+                  </h2>
+                  <p className="lux-copy mt-2 text-sm text-white/52">{selected.subtitle}</p>
+
+                  <div className="my-5 h-px w-10 bg-[#800808]/55" />
+
+                  <p className="font-serif-display text-sm leading-[1.85] text-[#f0dde1]/85 sm:text-[0.9375rem]">
+                    {selected.note}
+                  </p>
+
+                  <p className="lux-copy mt-6 text-[10px] tracking-[0.3em] text-white/24 uppercase">
+                    {selected.concept === "atelier" ? "The Royal Atelier" : "Cine-Matic Paw"}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ══════════════════════════════════════
+            3. Category Labels + Style Dock
+        ══════════════════════════════════════ */}
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mb-10 max-w-6xl"
+        >
+          <div className="overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex min-w-max gap-2">
+
+              {/* Atelier group */}
+              <div>
+                <p className="mb-3 text-[9px] tracking-[0.32em] text-[#d2a2aa] uppercase">
+                  The Classic Suite · I
+                </p>
+                <div className="flex gap-2.5">
+                  {STYLES.slice(0, 4).map((style) => (
+                    <DockCard
+                      key={style.id}
+                      style={style}
+                      isSelected={selectedId === style.id}
+                      onClick={() => setSelectedId(style.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Separator */}
+              <div className="mx-2 mt-6 flex-none self-stretch">
+                <div className="h-full w-px rounded-full bg-white/[0.08]" />
+              </div>
+
+              {/* Cinematic group */}
+              <div>
+                <p className="mb-3 text-[9px] tracking-[0.32em] text-[#a2aad2] uppercase">
+                  The Modern Gallery · II
+                </p>
+                <div className="flex gap-2.5">
+                  {STYLES.slice(4).map((style) => (
+                    <DockCard
+                      key={style.id}
+                      style={style}
+                      isSelected={selectedId === style.id}
+                      onClick={() => setSelectedId(style.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ══════════════════════════════════════
+            4. Upload Section
+        ══════════════════════════════════════ */}
+        <motion.section
+          id="upload-section"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto max-w-3xl rounded-[1.8rem] border border-white/[0.09] bg-black/22 px-6 py-8 sm:px-8"
+        >
+          {/* Header */}
+          <div className="mb-6">
+            <p className="font-serif-display text-xl text-[#f8dde2]">스튜디오 캔버스 테이블</p>
+            <p className="lux-copy mt-1 text-xs text-white/50">
+              <span className="text-[#f0cad0]">{selected.title}</span> 스타일로 기록할 사진을 업로드하세요.
+            </p>
+          </div>
+
+          {/* Drop zone */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOver(true);
+            }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragOver(false);
+              handleFileSelection(e.dataTransfer.files?.[0] ?? null);
+            }}
+            className={`relative rounded-xl border px-5 py-10 text-center transition-all duration-500 ${
+              isDragOver
+                ? "border-[#9b3a49]/80 bg-[linear-gradient(165deg,rgba(128,8,8,0.2),rgba(20,16,19,0.38))]"
+                : "border-[#800808]/22 bg-[linear-gradient(165deg,rgba(28,14,17,0.5),rgba(10,10,12,0.45))]"
             }`}
           >
-            마스터피스 생성하기
-          </motion.button>
-          <p className="text-xs text-white/48">
-            {canGenerate ? "준비 완료 — 생성하기 버튼을 눌러주세요" : "스타일 선택 + 사진 업로드 후 활성화됩니다"}
-          </p>
-        </div>
-      </motion.section>
+            <motion.div
+              aria-hidden
+              animate={
+                isDragOver
+                  ? { opacity: [0.1, 0.3, 0.1], scale: [0.98, 1.02, 0.98] }
+                  : { opacity: 0, scale: 1 }
+              }
+              transition={{ duration: 1.2, repeat: isDragOver ? Infinity : 0, ease: "easeInOut" }}
+              className="pointer-events-none absolute inset-3 rounded-lg bg-[radial-gradient(circle_at_30%_22%,rgba(146,36,51,0.28),transparent_56%)]"
+            />
+            <div className="pointer-events-none absolute inset-4 rounded-md border border-white/[0.08]" />
+
+            <p className="lux-copy text-sm text-white/80">작품으로 만들 사진을 이곳에 놓아주세요</p>
+            <p className="mt-2 text-xs text-white/44">드래그 앤 드롭 또는 직접 파일 선택</p>
+
+            <label className="mt-5 inline-block cursor-pointer rounded-full border border-white/16 bg-white/[0.05] px-5 py-2 text-xs text-white/75 transition-all duration-300 hover:border-white/28 hover:bg-white/10">
+              파일 선택
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
+              />
+            </label>
+
+            {uploadedFile && (
+              <p className="mt-3 text-xs text-[#efbec7]">업로드됨: {uploadedFile.name}</p>
+            )}
+          </div>
+
+          {/* Preview */}
+          {uploadPreviewUrl && (
+            <div className="mt-4 overflow-hidden rounded-xl border border-white/[0.08] bg-black/35 p-2">
+              <div
+                className="aspect-[4/3] rounded-lg bg-cover bg-center"
+                style={{ backgroundImage: `url('${uploadPreviewUrl}')` }}
+              />
+            </div>
+          )}
+
+          {/* Generate button */}
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <motion.button
+              type="button"
+              onClick={handleGenerate}
+              disabled={!canGenerate || isGenerating}
+              whileHover={canGenerate ? { scale: 1.02 } : undefined}
+              className={`gold-border-glow rounded-full px-10 py-3 text-sm font-semibold tracking-wide transition-all duration-500 ${
+                canGenerate
+                  ? "bg-[#2a0f15]/90 text-[#f5ccd3] hover:bg-[#38111b]"
+                  : "cursor-not-allowed border-white/16 bg-white/[0.05] text-white/36"
+              }`}
+            >
+              마스터피스 생성하기
+            </motion.button>
+            <p className="text-xs text-white/42">
+              {canGenerate
+                ? `${selected.title} 스타일로 생성합니다 — 준비 완료`
+                : "사진을 업로드하면 활성화됩니다"}
+            </p>
+          </div>
+        </motion.section>
+
+      </div>
     </main>
   );
 }
