@@ -144,7 +144,7 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
       whileHover={{ y: -5 }}
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
-      className="relative h-[120px] w-[92px] flex-none rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 text-left transition-colors duration-300 hover:border-white/14 hover:bg-white/[0.05]"
+      className="relative h-[120px] w-[100px] flex-none overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 text-left transition-colors duration-300 hover:border-white/14 hover:bg-white/[0.05]"
     >
       {/* Shared layout — slides smoothly between selected cards (Apple-style) */}
       {isSelected && (
@@ -163,7 +163,7 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
         />
       )}
       <p className="relative z-10 font-mono text-[9px] tracking-[0.2em] text-white/32">{style.num}</p>
-      <p className="relative z-10 font-serif-display mt-1.5 text-[13px] leading-tight text-white">{style.title}</p>
+      <p className="relative z-10 font-serif-display mt-1.5 truncate text-[13px] leading-tight text-white" title={style.title}>{style.title}</p>
       <p className="relative z-10 lux-copy mt-1 line-clamp-2 text-[10px] text-white/46">{style.subtitle}</p>
     </motion.button>
   );
@@ -354,7 +354,7 @@ export default function HomePage() {
                 ],
               }}
               transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-              className="relative aspect-square w-full max-w-[min(44vw,480px)] overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0a0a]"
+              className="relative aspect-square w-full max-w-[min(57vw,480px)] overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0a0a]"
             >
               <div className="noise-overlay" />
 
@@ -525,7 +525,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Drop zone */}
+          {/* Drop zone — 업로드 시 미리보기가 내부에 배치됨 */}
           <div
             onDragOver={(e) => {
               e.preventDefault();
@@ -537,51 +537,58 @@ export default function HomePage() {
               setIsDragOver(false);
               handleFileSelection(e.dataTransfer.files?.[0] ?? null);
             }}
-            className={`relative rounded-xl border px-5 py-10 text-center transition-all duration-500 ${
+            className={`relative flex min-h-[200px] flex-col items-center justify-center rounded-xl border px-5 py-10 text-center transition-all duration-500 ${
               isDragOver
                 ? "border-[#9b3a49]/80 bg-[linear-gradient(165deg,rgba(128,8,8,0.2),rgba(20,16,19,0.38))]"
                 : "border-[#800808]/22 bg-[linear-gradient(165deg,rgba(28,14,17,0.5),rgba(10,10,12,0.45))]"
             }`}
           >
-            <motion.div
-              aria-hidden
-              animate={
-                isDragOver
-                  ? { opacity: [0.1, 0.3, 0.1], scale: [0.98, 1.02, 0.98] }
-                  : { opacity: 0, scale: 1 }
-              }
-              transition={{ duration: 1.2, repeat: isDragOver ? Infinity : 0, ease: "easeInOut" }}
-              className="pointer-events-none absolute inset-3 rounded-lg bg-[radial-gradient(circle_at_30%_22%,rgba(146,36,51,0.28),transparent_56%)]"
-            />
-            <div className="pointer-events-none absolute inset-4 rounded-md border border-white/[0.08]" />
+            {uploadPreviewUrl ? (
+              /* 업로드된 이미지 — 드롭존 내부에 적당한 크기로 배치, 클릭/드래그로 재등록 가능 */
+              <label className="relative flex w-full max-w-[220px] cursor-pointer flex-col items-center">
+                <div
+                  className="aspect-square w-full rounded-lg border border-white/[0.1] bg-black/30 bg-cover bg-center shadow-lg"
+                  style={{ backgroundImage: `url('${uploadPreviewUrl}')` }}
+                />
+                <span className="mt-3 inline-block rounded-full border border-white/20 bg-black/40 px-4 py-2 text-xs text-white/90 transition hover:border-white/35 hover:bg-white/10">
+                  다른 사진으로 변경
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
+                />
+              </label>
+            ) : (
+              <>
+                <motion.div
+                  aria-hidden
+                  animate={
+                    isDragOver
+                      ? { opacity: [0.1, 0.3, 0.1], scale: [0.98, 1.02, 0.98] }
+                      : { opacity: 0, scale: 1 }
+                  }
+                  transition={{ duration: 1.2, repeat: isDragOver ? Infinity : 0, ease: "easeInOut" }}
+                  className="pointer-events-none absolute inset-3 rounded-lg bg-[radial-gradient(circle_at_30%_22%,rgba(146,36,51,0.28),transparent_56%)]"
+                />
+                <div className="pointer-events-none absolute inset-4 rounded-md border border-white/[0.08]" />
 
-            <p className="lux-copy text-sm text-white/80">작품으로 만들 사진을 이곳에 놓아주세요</p>
-            <p className="mt-2 text-xs text-white/44">드래그 앤 드롭 또는 직접 파일 선택</p>
+                <p className="lux-copy text-sm text-white/80">작품으로 만들 사진을 이곳에 놓아주세요</p>
+                <p className="mt-2 text-xs text-white/44">드래그 앤 드롭 또는 직접 파일 선택</p>
 
-            <label className="mt-5 inline-block cursor-pointer rounded-full border border-white/16 bg-white/[0.05] px-5 py-2 text-xs text-white/75 transition-all duration-300 hover:border-white/28 hover:bg-white/10">
-              파일 선택
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
-              />
-            </label>
-
-            {uploadedFile && (
-              <p className="mt-3 text-xs text-[#efbec7]">업로드됨: {uploadedFile.name}</p>
+                <label className="mt-5 inline-block cursor-pointer rounded-full border border-white/16 bg-white/[0.05] px-5 py-2 text-xs text-white/75 transition-all duration-300 hover:border-white/28 hover:bg-white/10">
+                  파일 선택
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileSelection(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+              </>
             )}
           </div>
-
-          {/* Preview */}
-          {uploadPreviewUrl && (
-            <div className="mt-4 overflow-hidden rounded-xl border border-white/[0.08] bg-black/35 p-2">
-              <div
-                className="aspect-square max-w-[200px] rounded-lg bg-cover bg-center"
-                style={{ backgroundImage: `url('${uploadPreviewUrl}')` }}
-              />
-            </div>
-          )}
 
           {/* Generate button */}
           <div className="mt-8 flex flex-col items-center gap-3">

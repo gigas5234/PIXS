@@ -1,6 +1,19 @@
 # style-heroic-cinematic
 
 ## Prompt
-"A master-level, ultra-high-resolution cinematic studio photograph of the subject pet from the uploaded image, presented as a full-body, heroic portrait. Strictly exclude all historical artist's tools, easels, and classic oil painting textures. The background is a complete, absolute, seamless dark obsidian studio void, reflecting a high-end Hollywood movie set.
+"A high-end Hollywood heroic cinematic portrait.
 
-All attention is focused on the subject pet, seated in a formal, elegant upright 'heroic' pose, looking directly and confidently at the viewer with its natural eye color intensified and sharp focus. It wears a meticulously designed, high-tech futuristic tactical harness featuring complex, layered metallic plating with a brushed"
+1. SUBJECT IDENTITY (Multimodal Awareness):
+- Analyze [input_file_0] to replicate the exact breed and physical presence. Preserve unique ear shapes, eye colors, and markings.
+- Ensure the character's 'identity' is the core focus of this heroic transformation.
+
+2. STYLE ADAPTATION:
+- The subject wears a custom-fitted, high-tech futuristic tactical harness with layered titanium plates and a glowing cyan energy core.
+- Seated in a confident, upright 'hero' pose on a dark metallic platform.
+
+3. TEXTURE & LIGHTING:
+- Intense cinematic lighting: cool blue key light and a warm red rim light defining the silhouette.
+- Ultra-sharp IMAX texture, showing extreme detail of the coat and the brushed metallic finish of the gear."
+
+## Birth Narrative
+"한계를 넘어선 진화, 당신의 반려동물이 압도적인 존재감을 뿜어내는 시네마틱 히어로로 탄생했습니다."

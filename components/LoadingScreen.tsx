@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useMemo } from "react";
 
 const PROGRESS_PHRASES: { min: number; max: number; text: string }[] = [
   { min: 0, max: 20, text: "새로운 생명의 선을 긋는 중..." },
@@ -21,8 +22,63 @@ type LoadingScreenProps = {
 
 const CANVAS_SIZE = 320;
 
+/** 적당한 밝기의 랜덤 색상 팔레트 (진한 톤 지양) */
+const STROKE_COLORS = [
+  "rgba(232, 180, 184, 0.75)",  // soft coral
+  "rgba(168, 212, 230, 0.7)",   // dusty blue
+  "rgba(201, 228, 192, 0.7)",   // sage
+  "rgba(226, 212, 240, 0.75)",  // lavender
+  "rgba(245, 230, 200, 0.7)",   // warm gold
+  "rgba(212, 165, 165, 0.7)",   // dusty rose
+  "rgba(156, 180, 168, 0.7)",   // muted teal
+  "rgba(218, 192, 212, 0.7)",   // dusty mauve
+  "rgba(192, 210, 230, 0.65)",  // soft sky
+  "rgba(230, 210, 180, 0.7)",   // warm sand
+];
+
+function random(seed: number) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function createStrokeData() {
+  const strokes: { type: "stroke" | "dot"; x: number; y: number; w: number; h: number; rot: number; color: string; delay: number }[] = [];
+  for (let i = 0; i < 28; i++) {
+    const isDot = i % 4 === 0;
+    const color = STROKE_COLORS[Math.floor(random(i * 7) * STROKE_COLORS.length)];
+    const delay = random(i * 13) * 9;
+    if (isDot) {
+      strokes.push({
+        type: "dot",
+        x: random(i * 2) * 85 + 5,
+        y: random(i * 3) * 85 + 5,
+        w: 4 + random(i * 5) * 6,
+        h: 4 + random(i * 5) * 6,
+        rot: 0,
+        color,
+        delay,
+      });
+    } else {
+      const len = 20 + random(i * 11) * 70;
+      const rot = random(i * 17) * 360;
+      strokes.push({
+        type: "stroke",
+        x: random(i * 19) * 80 + 5,
+        y: random(i * 23) * 80 + 5,
+        w: 2 + random(i * 29) * 2.5,
+        h: len,
+        rot,
+        color,
+        delay,
+      });
+    }
+  }
+  return strokes;
+}
+
 export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) {
   const phrase = getPhraseForProgress(progress);
+  const strokeData = useMemo(() => createStrokeData(), []);
 
   return (
     <motion.section
@@ -51,7 +107,7 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
         The Artist&apos;s Work
       </p>
 
-      {/* 캔버스 — 고정 크기, 붓터치 느낌 */}
+      {/* 캔버스 — 고정 크기, 랜덤 선/점 그어지는 느낌 */}
       <div
         className="relative mx-auto overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a]"
         style={{
@@ -60,41 +116,39 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
           boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 20px 80px rgba(0,0,0,0.8)",
         }}
       >
-        {/* 붓터치 효과 — 좌→우로 그려지는 느낌 */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* 진행률에 따라 채워지는 붓자국들 (세로 스트로크) */}
-          {Array.from({ length: 12 }).map((_, i) => {
-            const strokeProgress = (i / 12) * 100;
-            const visible = progress >= strokeProgress;
-            return (
-              <motion.div
-                key={i}
-                className="absolute top-0 bottom-0 w-2 rounded-full"
-                style={{
-                  left: `${(i / 12) * 100}%`,
-                  transformOrigin: "left center",
-                  background: "linear-gradient(180deg, transparent 0%, rgba(128,8,8,0.25) 20%, rgba(160,48,64,0.5) 50%, rgba(128,8,8,0.25) 80%, transparent 100%)",
-                  boxShadow: "0 0 6px rgba(128,8,8,0.2)",
-                }}
-                initial={{ scaleX: 0, opacity: 0 }}
-                animate={{
-                  scaleX: visible ? 1 : 0,
-                  opacity: visible ? 0.9 : 0,
-                }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-              />
-            );
-          })}
-          {/* 붓끝이 움직이는 커서 */}
-          <motion.div
-            className="absolute top-0 bottom-0 w-1.5 rounded-full"
-            style={{
-              background: "linear-gradient(180deg, transparent, rgba(180,60,80,0.6), transparent)",
-              boxShadow: "0 0 12px rgba(128,8,8,0.4)",
-            }}
-            animate={{ left: `${progress}%` }}
-            transition={{ duration: 0.2 }}
-          />
+          {strokeData.map((s, i) => (
+            <motion.div
+              key={i}
+              className="absolute"
+              style={{
+                left: `${s.x}%`,
+                top: `${s.y}%`,
+                width: s.w,
+                height: s.h,
+                transformOrigin: s.type === "stroke" ? "center top" : "center center",
+                transform: s.type === "dot" ? "translate(-50%, -50%)" : `rotate(${s.rot}deg)`,
+                borderRadius: s.type === "dot" ? "50%" : "999px",
+                background: s.color,
+                boxShadow: `0 0 6px ${s.color}`,
+              }}
+              initial={
+                s.type === "stroke"
+                  ? { scaleY: 0, opacity: 0 }
+                  : { scale: 0, opacity: 0 }
+              }
+              animate={
+                s.type === "stroke"
+                  ? { scaleY: 1, opacity: 0.85 }
+                  : { scale: 1, opacity: 0.85 }
+              }
+              transition={{
+                delay: s.delay,
+                duration: s.type === "dot" ? 0.35 : 0.55,
+                ease: "easeOut",
+              }}
+            />
+          ))}
         </div>
       </div>
 
