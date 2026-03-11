@@ -14,7 +14,8 @@
 
 3. TEXTURE & LIGHTING:
 - Noble, soft-focus painterly lighting. 
-- Focus on the richness of the velvet texture and the intricate embroidery of the royal wardrobe."
+- Focus on the richness of the velvet texture and the intricate embroidery of the royal wardrobe.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 "대칭의 미학과 왕실의 품격, 당신의 반려동물이 고전적인 우아함을 입은 왕족의 모습으로 탄생했습니다."

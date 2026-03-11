@@ -14,7 +14,8 @@
 
 3. TEXTURE & LIGHTING:
 - Soft, painterly gradients with delicate textile details.
-- A restrained palette centered on Vermeer-blue and warm ochre tones. Minimalist and peaceful."
+- A restrained palette centered on Vermeer-blue and warm ochre tones. Minimalist and peaceful.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 "창가로 스며드는 온화한 빛, 당신의 반려동물이 가진 평온한 일상이 세대를 뛰어넘는 명화로 기록되었습니다."

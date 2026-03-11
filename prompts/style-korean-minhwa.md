@@ -18,7 +18,8 @@
 3. TEXTURE & LIGHTING:
 - Use muted 'Obangsaek' pigments.
 - Highlight the subject's features through delicate, repetitive ink brush-strokes that feel like they are rising from the fibrous Hanji paper.
-- The final masterpiece must feel like a centuries-old national treasure, celebrating the unique 'new birth' of this specific creature."
+- The final masterpiece must feel like a centuries-old national treasure, celebrating the unique 'new birth' of this specific creature.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 When the result is displayed, show a one-line summary of how this animal was reborn with artistic characteristics—aligned with the main copy: "기록이 아닌, 경이로운 탄생" (Not a record, but a wondrous birth).

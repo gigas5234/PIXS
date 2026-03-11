@@ -14,7 +14,8 @@
 
 3. TEXTURE & LIGHTING:
 - Extreme heavy impasto technique with visible ridges of thick paint. 
-- Bold color contrast using chrome yellows against deep Prussian blues. The image should feel like a living, breathing canvas."
+- Bold color contrast using chrome yellows against deep Prussian blues. The image should feel like a living, breathing canvas.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 "강렬한 붓 터치와 소용돌이치는 색채, 당신의 반려동물이 가진 역동적인 생명력이 캔버스 위에 피어났습니다."

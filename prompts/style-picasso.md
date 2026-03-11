@@ -14,7 +14,8 @@
 
 3. TEXTURE & LIGHTING:
 - A mix of painterly textures and flat color planes. 
-- High intellectual and emotional impact through abstract reinterpretation of the pet's soul."
+- High intellectual and emotional impact through abstract reinterpretation of the pet's soul.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 "정형화된 틀을 깨는 새로운 시각, 당신의 반려동물이 입체적인 예술의 조각들로 화려하게 재구성되었습니다."

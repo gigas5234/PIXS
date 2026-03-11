@@ -14,7 +14,8 @@
 
 3. TEXTURE & LIGHTING:
 - Ethereal 'golden hour' rim lighting creating a shimmering halo. 
-- Dreamy, volumetric haze and ultra-fine, soft fur rendering for a magical atmosphere."
+- Dreamy, volumetric haze and ultra-fine, soft fur rendering for a magical atmosphere.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 "금빛 가루와 마법 같은 조명, 당신의 반려동물이 꿈속에서 튀어나온 듯한 동화 속 주인공으로 깨어났습니다."

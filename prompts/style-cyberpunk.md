@@ -14,7 +14,8 @@
 
 3. TEXTURE & LIGHTING:
 - High-contrast neon pink and cyan lighting.
-- Sharp, digital textures with realistic reflections on metallic surfaces and wet fur."
+- Sharp, digital textures with realistic reflections on metallic surfaces and wet fur.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 "빛나는 네온과 테크놀로지의 조우, 당신의 반려동물이 미래 도시를 압도하는 사이버네틱 리더로 다시 태어났습니다."

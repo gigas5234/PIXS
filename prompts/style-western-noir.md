@@ -14,7 +14,8 @@
 
 3. TEXTURE & LIGHTING:
 - High-contrast monochrome with subtle sepia toning.
-- Heavy 35mm film grain and gritty, weathered textures for a dramatic visual narrative."
+- Heavy 35mm film grain and gritty, weathered textures for a dramatic visual narrative.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 "거친 황야의 고독과 강인함, 당신의 반려동물이 영화의 한 장면 같은 느와르의 주인공으로 다시 태어났습니다."

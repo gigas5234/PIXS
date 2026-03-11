@@ -15,7 +15,8 @@
 
 3. TEXTURE & LIGHTING:
 - Feature heavy, tactile impasto oil paint brushstrokes. 
-- Highlight the soulfulness of the eyes with focused reflections. The final piece must feel like a centuries-old museum masterpiece."
+- Highlight the soulfulness of the eyes with focused reflections. The final piece must feel like a centuries-old museum masterpiece.
+- Leave a subtle, clean, and unobstructed space in the bottom-right corner for a professional artist's signature. Ensure no critical visual elements are placed in this 10% corner area."
 
 ## Birth Narrative
 "어둠 속에서 피어난 거장의 빛, 당신의 동반자가 가진 고귀한 영혼이 17세기 클래식 유화로 다시 태어났습니다."
