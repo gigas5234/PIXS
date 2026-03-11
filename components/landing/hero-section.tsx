@@ -49,14 +49,14 @@ export function HeroSection({ onStartCreating, onExploreThemes }: HeroSectionPro
           transition={{ delay: 0.1, duration: 0.6 }}
           className="mb-6 flex justify-center"
         >
-          <span className="font-serif-display text-xl tracking-[0.22em] text-[#d37f89] sm:text-2xl">PIXS</span>
+          <span className="font-serif-display text-xl tracking-[0.27em] text-[#d37f89] sm:text-2xl">PIXS</span>
         </motion.div>
 
         <motion.p
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.7 }}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#800808]/45 bg-[#800808]/15 px-4 py-1.5 text-xs tracking-[0.2em] text-[#e2a2aa] uppercase"
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#800808]/45 bg-[#800808]/15 px-4 py-1.5 text-xs tracking-[0.25em] text-[#e2a2aa] uppercase"
         >
           <Sparkles size={14} />
           선택 + 작품 + 스튜디오

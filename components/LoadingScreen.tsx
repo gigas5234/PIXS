@@ -42,13 +42,13 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
         animate={{ opacity: [0.4, 0.9, 0.4] }}
         transition={{ duration: 2.0, repeat: Infinity, ease: "easeInOut" }}
       >
-        <span className="font-serif-display text-2xl font-semibold tracking-[0.55em] text-white/85">
+        <span className="font-serif-display text-2xl font-semibold tracking-[0.6em] text-white/85">
           PIXS LOADING
         </span>
       </motion.div>
 
       {/* 보조 상태 문구 (아주 작게) */}
-      <p className="mt-2 text-[9px] uppercase tracking-[0.28em] text-[#b45d69]/80">
+      <p className="mt-2 text-[9px] uppercase tracking-[0.33em] text-[#b45d69]/80">
         The Artist&apos;s Work
       </p>
 

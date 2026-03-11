@@ -74,7 +74,7 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
   return (
     <section className="mt-14 rounded-[1.8rem] border border-white/10 bg-white/[0.02] px-5 py-8 sm:px-8 sm:py-10">
       <div className="mb-7 text-center">
-        <p className="text-xs tracking-[0.2em] text-[#a7424f]/85 uppercase">Studio Selector</p>
+        <p className="text-xs tracking-[0.25em] text-[#a7424f]/85 uppercase">Studio Selector</p>
         <h2 className="font-serif-display mt-3 text-3xl text-[#f9e8eb] sm:text-4xl">당신의 스타일을 선택하세요</h2>
         <p className="lux-copy mx-auto mt-3 max-w-2xl text-sm text-white/70 sm:text-base">
           선택한 메인 컨셉에 맞춰 세부 작가/장르 스타일을 고르고, 이후 AI 프롬프트 주입이 가능한 구조로 확장됩니다.
@@ -181,7 +181,7 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
             className="mt-8 space-y-4"
           >
             <section className="rounded-2xl border border-[#800808]/35 bg-black/28 px-5 py-4">
-              <p className="text-xs tracking-[0.18em] text-[#ce8993] uppercase">The Stylist&apos;s Note</p>
+              <p className="text-xs tracking-[0.23em] text-[#ce8993] uppercase">The Stylist&apos;s Note</p>
               <p className="font-serif-display mt-3 text-sm leading-relaxed text-[#f2d8dc] sm:text-base">
                 {stylistNotes[selectedStyle.id] ?? `${selectedStyle.title} 스타일로 고유한 조명과 질감을 정교하게 적용합니다.`}
               </p>

@@ -13,7 +13,7 @@ export function DualThemeSelector() {
         transition={{ duration: 0.65 }}
         className="mb-7 text-center"
       >
-        <p className="text-xs tracking-[0.24em] text-[#a7424f]/80 uppercase">시그니처 콘셉트</p>
+        <p className="text-xs tracking-[0.29em] text-[#a7424f]/80 uppercase">시그니처 콘셉트</p>
         <h2 className="font-serif-display mt-3 text-3xl text-[#fbf6e5] sm:text-4xl">
           당신의 스타일을 선택하세요
         </h2>

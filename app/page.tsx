@@ -162,7 +162,7 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
           transition={{ type: "spring", stiffness: 400, damping: 40 }}
         />
       )}
-      <p className="relative z-10 font-mono text-[9px] tracking-[0.2em] text-white/32">{style.num}</p>
+      <p className="relative z-10 font-mono text-[9px] tracking-[0.25em] text-white/32">{style.num}</p>
       <p className="relative z-10 font-serif-display mt-1.5 text-[13px] leading-tight text-white">{style.title}</p>
       <p className="relative z-10 lux-copy mt-1 line-clamp-2 text-[10px] text-white/46">{style.subtitle}</p>
     </motion.button>
@@ -321,7 +321,7 @@ export default function HomePage() {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="mx-auto mb-10 max-w-6xl text-center"
         >
-          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#800808]/45 bg-[#800808]/16 px-4 py-1.5 text-[11px] tracking-[0.22em] text-[#e3aab3] uppercase">
+          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#800808]/45 bg-[#800808]/16 px-4 py-1.5 text-[11px] tracking-[0.27em] text-[#e3aab3] uppercase">
             <Sparkles size={13} />
             PIXS Studio
           </p>
@@ -431,7 +431,7 @@ export default function HomePage() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <p className="mb-3 text-[10px] tracking-[0.32em] text-[#d2a2aa] uppercase">
+                  <p className="mb-3 text-[10px] tracking-[0.37em] text-[#d2a2aa] uppercase">
                     The Stylist&apos;s Note
                   </p>
                   <h2 className="font-serif-display text-3xl leading-tight text-[#f7e0e5] lg:text-[2.25rem]">
@@ -468,7 +468,7 @@ export default function HomePage() {
 
               {/* Atelier group */}
               <div>
-                <p className="mb-3 text-[9px] tracking-[0.32em] text-[#d2a2aa] uppercase">
+                <p className="mb-3 text-[9px] tracking-[0.37em] text-[#d2a2aa] uppercase">
                   The Classic Suite · I
                 </p>
                 <div className="flex gap-2.5 md:flex-wrap">
@@ -490,7 +490,7 @@ export default function HomePage() {
 
               {/* Cinematic group */}
               <div>
-                <p className="mb-3 text-[9px] tracking-[0.32em] text-[#a2aad2] uppercase">
+                <p className="mb-3 text-[9px] tracking-[0.37em] text-[#a2aad2] uppercase">
                   The Modern Gallery · II
                 </p>
                 <div className="flex gap-2.5 md:flex-wrap">

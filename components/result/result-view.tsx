@@ -78,7 +78,8 @@ export function ResultView({ styleId }: ResultViewProps) {
         ctx.drawImage(img, 0, 0);
 
         // 평균 밝기 샘플링 (우측 하단 작은 영역)
-        const margin = Math.floor(canvas.width * 0.05);
+        // 서명 영역: 10% 마진으로 확보해 이미지 콘텐츠와 겹침 방지
+        const margin = Math.floor(canvas.width * 0.10);
         const sampleX = canvas.width - margin * 2;
         const sampleY = canvas.height - margin * 2;
         const sampleWidth = margin * 2;
@@ -109,20 +110,33 @@ export function ResultView({ styleId }: ResultViewProps) {
           signatureFontStacks[styleId] ??
           `"Cormorant Garamond", "Cormorant", "Playfair Display", "Times New Roman", serif`;
         ctx.save();
-        ctx.globalAlpha = 0.7;
         ctx.font = `${fontSize}px ${fontStack}`;
+        const text = signatureText;
+        const textWidth = ctx.measureText(text).width;
+        const x = canvas.width - margin;
+        const y = canvas.height - margin * 0.8;
+
+        // 서명 배경: 반투명 패드로 이미지 콘텐츠와 겹쳐 보이지 않게 분리
+        const padH = Math.floor(fontSize * 0.5);
+        const padV = Math.floor(fontSize * 0.4);
+        const bgX = x - textWidth - padH * 2;
+        const bgY = y - fontSize - padV;
+        const bgW = textWidth + padH * 2;
+        const bgH = fontSize + padV * 2 + Math.floor(fontSize * 0.2);
+        ctx.fillStyle = avgLuma > 140 ? "rgba(0,0,0,0.55)" : "rgba(20,12,8,0.65)";
+        ctx.beginPath();
+        ctx.rect(bgX, bgY, bgW, bgH);
+        ctx.fill();
+
+        ctx.globalAlpha = 0.92;
         ctx.textAlign = "right";
         ctx.textBaseline = "bottom";
         ctx.fillStyle = color;
-
-        const text = signatureText;
-        const x = canvas.width - margin;
-        const y = canvas.height - margin * 0.6;
         ctx.fillText(text, x, y);
         // 밑줄 (언더라인) 추가로 각인된 서명 느낌 강화
         const underlineOffset = Math.floor(fontSize * 0.15);
         ctx.beginPath();
-        ctx.moveTo(x - ctx.measureText(text).width, y + underlineOffset);
+        ctx.moveTo(x - textWidth, y + underlineOffset);
         ctx.lineTo(x, y + underlineOffset);
         ctx.lineWidth = Math.max(1, Math.floor(fontSize * 0.06));
         ctx.strokeStyle = color;
@@ -144,7 +158,7 @@ export function ResultView({ styleId }: ResultViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [baseImageUrl, signatureText]);
+  }, [baseImageUrl, signatureText, styleId]);
 
   const handleDownload = () => {
     if (!resultImageUrl) return;
@@ -205,7 +219,7 @@ export function ResultView({ styleId }: ResultViewProps) {
               transition={{ duration: 0.6 }}
               className="mx-auto w-full max-w-3xl"
             >
-              <p className="mb-4 text-center text-[10px] tracking-[0.32em] text-[#d2a2aa] uppercase">
+              <p className="mb-4 text-center text-[10px] tracking-[0.37em] text-[#d2a2aa] uppercase">
                 The Royal Reveal
               </p>
               <h1 className="font-serif-display text-center text-2xl text-[#f8e9ec] sm:text-3xl">
@@ -252,22 +266,23 @@ export function ResultView({ styleId }: ResultViewProps) {
                         animate={{ opacity: 1 }}
                         className="flex h-full w-full items-center justify-center bg-[linear-gradient(165deg,#2b1118_0%,#101015_56%,#25121a_100%)]"
                       >
-                        <p className="text-[11px] tracking-[0.28em] text-white/35 uppercase">
+                        <p className="text-[11px] tracking-[0.33em] text-white/35 uppercase">
                           API 연결 후 생성 이미지가 표시됩니다
                         </p>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  {/* 서명 애니메이션 오버레이 (우측 하단) */}
+                  {/* 서명 애니메이션 오버레이 (우측 하단, 배경으로 겹침 방지) */}
                   {signatureText && signatureText.trim().length > 0 && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0, 1] }}
                       transition={{ duration: 1.6, delay: 0.8, ease: "easeInOut" }}
-                      className="pointer-events-none absolute bottom-3 right-4 text-right"
+                      className="pointer-events-none absolute bottom-3 right-4 rounded px-2.5 py-1.5 text-right"
+                      style={{ background: "rgba(20,12,8,0.65)" }}
                     >
-                      <p className="font-serif text-[11px] text-white/85 tracking-[0.18em]">
+                      <p className="font-serif text-[11px] text-white/90 tracking-[0.23em]">
                         {signatureText}
                       </p>
                       <div className="mt-0.5 h-px w-full bg-white/70" />

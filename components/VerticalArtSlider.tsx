@@ -56,10 +56,10 @@ export function VerticalArtSlider({ originalImage, masterpieceImage }: VerticalA
           </motion.div>
         </motion.div>
 
-        <div className="absolute left-6 top-6 z-20 rounded-full border border-white/20 bg-black/35 px-3 py-1 text-xs tracking-[0.18em] text-white/78 uppercase">
+        <div className="absolute left-6 top-6 z-20 rounded-full border border-white/20 bg-black/35 px-3 py-1 text-xs tracking-[0.23em] text-white/78 uppercase">
           Original
         </div>
-        <div className="absolute bottom-6 right-6 z-20 rounded-full border border-[#800808]/45 bg-[#800808]/22 px-3 py-1 text-xs tracking-[0.18em] text-[#f0cad0] uppercase">
+        <div className="absolute bottom-6 right-6 z-20 rounded-full border border-[#800808]/45 bg-[#800808]/22 px-3 py-1 text-xs tracking-[0.23em] text-[#f0cad0] uppercase">
           Masterpiece
         </div>
       </div>

@@ -260,7 +260,7 @@ export function ExhibitionGallery({ selectedStyleId, onSelectStyle, uploadSectio
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <p className="mb-1.5 text-[10px] tracking-[0.32em] text-[#d2a2aa] uppercase">The Classic Suite · I</p>
+          <p className="mb-1.5 text-[10px] tracking-[0.37em] text-[#d2a2aa] uppercase">The Classic Suite · I</p>
           <h2 className="font-serif-display text-3xl text-[#f7e0e5]">The Royal Atelier</h2>
           <p className="lux-copy mt-1 text-sm text-white/50">17세기 유럽 거장의 화풍으로 영원히 기록되다</p>
         </motion.header>
@@ -322,7 +322,7 @@ export function ExhibitionGallery({ selectedStyleId, onSelectStyle, uploadSectio
                 {/* Placeholder label */}
                 {!style.imageSrc && (
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <p className="text-[10px] tracking-[0.22em] text-white/18 uppercase">Sample Coming Soon</p>
+                    <p className="text-[10px] tracking-[0.27em] text-white/18 uppercase">Sample Coming Soon</p>
                   </div>
                 )}
 
@@ -343,7 +343,7 @@ export function ExhibitionGallery({ selectedStyleId, onSelectStyle, uploadSectio
 
                 {/* Card info */}
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="font-mono text-[9px] tracking-[0.28em] text-white/38 mb-1">{style.num}</p>
+                  <p className="font-mono text-[9px] tracking-[0.33em] text-white/38 mb-1">{style.num}</p>
                   <p className="font-serif-display text-xl text-white leading-snug">{style.title}</p>
                   <p className="lux-copy mt-1 text-[11px] text-white/62">{style.subtitle}</p>
                   <button
@@ -378,7 +378,7 @@ export function ExhibitionGallery({ selectedStyleId, onSelectStyle, uploadSectio
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <p className="mb-1.5 text-[10px] tracking-[0.32em] text-[#a2aad2] uppercase">The Modern Gallery · II</p>
+          <p className="mb-1.5 text-[10px] tracking-[0.37em] text-[#a2aad2] uppercase">The Modern Gallery · II</p>
           <h2 className="font-serif-display text-3xl text-[#e4ebff]">Cine-Matic Paw</h2>
           <p className="lux-copy mt-1 text-sm text-white/50">할리우드의 웅장함, 미래의 감각으로 재탄생</p>
         </motion.header>
@@ -454,7 +454,7 @@ export function ExhibitionGallery({ selectedStyleId, onSelectStyle, uploadSectio
                 {/* Placeholder */}
                 {!style.imageSrc && (
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <p className="text-[10px] tracking-[0.22em] text-white/16 uppercase">Sample Coming Soon</p>
+                    <p className="text-[10px] tracking-[0.27em] text-white/16 uppercase">Sample Coming Soon</p>
                   </div>
                 )}
 
@@ -476,7 +476,7 @@ export function ExhibitionGallery({ selectedStyleId, onSelectStyle, uploadSectio
 
                 {/* Card info */}
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="font-mono text-[9px] tracking-[0.28em] text-white/35 mb-1">{style.num}</p>
+                  <p className="font-mono text-[9px] tracking-[0.33em] text-white/35 mb-1">{style.num}</p>
                   <p className="font-serif-display text-xl text-white leading-snug">{style.title}</p>
                   <p className="lux-copy mt-1 text-[11px] text-white/60">{style.subtitle}</p>
                   <button
@@ -506,7 +506,7 @@ export function ExhibitionGallery({ selectedStyleId, onSelectStyle, uploadSectio
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="mb-12 rounded-2xl border border-white/10 bg-black/30 px-6 py-5 backdrop-blur-md"
           >
-            <p className="text-[10px] tracking-[0.3em] text-[#d2a2aa] uppercase">The Stylist&apos;s Note — {selectedStyle.title}</p>
+            <p className="text-[10px] tracking-[0.35em] text-[#d2a2aa] uppercase">The Stylist&apos;s Note — {selectedStyle.title}</p>
             <p className="font-serif-display mt-3 text-sm leading-relaxed text-[#f0dde1] sm:text-base">
               {STYLE_NOTES[selectedStyle.noteKey]}
             </p>
