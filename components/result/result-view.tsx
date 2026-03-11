@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Download, Share2, RotateCcw } from "lucide-react";
-import { LoadingScreen } from "@/components/LoadingScreen";
 
 type ResultViewProps = {
   styleId: string;
@@ -12,8 +11,6 @@ type ResultViewProps = {
 
 export function ResultView({ styleId }: ResultViewProps) {
   const router = useRouter();
-  const [progress, setProgress] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
 
   const [uploadPreviewUrl] = useState<string | null>(
@@ -27,39 +24,12 @@ export function ResultView({ styleId }: ResultViewProps) {
       (typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null) ?? "선택 스타일",
   );
 
-  // API 연결 시 pixs:resultImageUrl 사용, 미연결 시 업로드 미리보기로 대체
   const resultImageUrl = resultImageUrlFromStorage ?? uploadPreviewUrl;
 
-  const isLoading = !isRevealed;
-
   useEffect(() => {
-    if (!isLoading) return;
-
-    const duration = 6500; // 총 로딩 시간 (ms)
-    const steps = 60;
-    const stepMs = duration / steps;
-    const stepValue = 100 / steps;
-
-    let current = 0;
-    const timer = window.setInterval(() => {
-      current += stepValue;
-      if (current >= 100) {
-        window.clearInterval(timer);
-        setProgress(100);
-        setTimeout(() => setIsRevealed(true), 400);
-        return;
-      }
-      setProgress(Math.round(current));
-    }, stepMs);
-
-    return () => window.clearInterval(timer);
-  }, [isLoading]);
-
-  useEffect(() => {
-    if (!isRevealed) return;
-    const t = window.setTimeout(() => setShowButtons(true), 2000);
+    const t = window.setTimeout(() => setShowButtons(true), 800);
     return () => window.clearTimeout(t);
-  }, [isRevealed]);
+  }, []);
 
   const handleDownload = () => {
     if (!resultImageUrl) return;
@@ -96,9 +66,9 @@ export function ResultView({ styleId }: ResultViewProps) {
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E")`,
       }}
     >
-      {/* Gallery wall texture + pin spotlight (visible after reveal) */}
+      {/* Gallery wall texture + pin spotlight */}
       <AnimatePresence>
-        {isRevealed && (
+        {resultImageUrl && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -112,13 +82,9 @@ export function ResultView({ styleId }: ResultViewProps) {
       </AnimatePresence>
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-10">
-        <AnimatePresence mode="wait">
-          {isLoading ? (
-            <LoadingScreen key="loading" progress={progress} />
-          ) : (
-            /* ═══ The Reveal — Result State ═══ */
-            <motion.section
-              key="reveal"
+        <AnimatePresence>
+          <motion.section
+              key="result"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
@@ -236,7 +202,6 @@ export function ResultView({ styleId }: ResultViewProps) {
                 )}
               </AnimatePresence>
             </motion.section>
-          )}
         </AnimatePresence>
       </div>
     </main>

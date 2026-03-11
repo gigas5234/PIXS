@@ -183,6 +183,7 @@ export default function HomePage() {
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [apiComplete, setApiComplete] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
   const selected = STYLES.find((s) => s.id === selectedId) ?? STYLES[0];
@@ -257,7 +258,7 @@ export default function HomePage() {
       if (data.imageUrl) {
         sessionStorage.setItem("pixs:resultImageUrl", data.imageUrl);
         addLog({ type: "success", message: "이미지 생성 완료" });
-        router.push(`/result?style=${selectedId}`);
+        setApiComplete(true);
       } else {
         addLog({ type: "error", message: "응답에 imageUrl 없음", detail: data });
         setIsGenerating(false);
@@ -267,7 +268,14 @@ export default function HomePage() {
       addLog({ type: "error", message: msg, detail: err });
       setIsGenerating(false);
     }
-  }, [canGenerate, uploadedFile, selectedId, selected.title, uploadPreviewUrl, isGenerating, addLog, router]);
+  }, [canGenerate, uploadedFile, selectedId, selected.title, uploadPreviewUrl, isGenerating, addLog]);
+
+  const handleLoadingComplete = useCallback(() => {
+    setApiComplete(false);
+    setIsGenerating(false);
+    const styleId = typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyle") : null;
+    router.push(`/result?style=${styleId ?? selectedId}`);
+  }, [router, selectedId]);
 
   useEffect(() => {
     return () => {
@@ -277,7 +285,11 @@ export default function HomePage() {
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#080808] text-white">
-      <LoadingOverlay isVisible={isGenerating} />
+      <LoadingOverlay
+        isVisible={isGenerating}
+        apiComplete={apiComplete}
+        onComplete={handleLoadingComplete}
+      />
       <DebugLogPanel
         logs={logs}
         onClear={() => setLogs([])}
