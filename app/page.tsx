@@ -7,11 +7,14 @@ import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { Sparkles } from "lucide-react";
 import { getPromptByStyle } from "@/lib/prompts/style-prompts";
 
+type ConceptId = "atelier" | "cinematic";
+
 type StyleItem = {
   id: string;
   title: string;
   subtitle: string;
   previewClass: string;
+  concept: ConceptId;
 };
 
 const styles: StyleItem[] = [
@@ -19,6 +22,7 @@ const styles: StyleItem[] = [
     id: "rembrandt",
     title: "Rembrandt",
     subtitle: "빛과 그림자의 거장",
+    concept: "atelier",
     previewClass:
       "bg-[radial-gradient(circle_at_18%_12%,rgba(188,89,103,0.42),transparent_35%),linear-gradient(165deg,#3a141a_0%,#130f12_48%,#241218_100%)]",
   },
@@ -26,6 +30,7 @@ const styles: StyleItem[] = [
     id: "vermeer",
     title: "Vermeer",
     subtitle: "고요한 자연광의 정수",
+    concept: "atelier",
     previewClass:
       "bg-[radial-gradient(circle_at_70%_16%,rgba(218,132,149,0.4),transparent_34%),linear-gradient(155deg,#2e1419_0%,#111217_50%,#231a1f_100%)]",
   },
@@ -33,6 +38,7 @@ const styles: StyleItem[] = [
     id: "van-gogh",
     title: "Van Gogh",
     subtitle: "역동적 붓 터치의 긴장감",
+    concept: "atelier",
     previewClass:
       "bg-[radial-gradient(circle_at_24%_22%,rgba(156,56,71,0.45),transparent_36%),linear-gradient(150deg,#431621_0%,#1a1014_52%,#30131b_100%)]",
   },
@@ -40,6 +46,7 @@ const styles: StyleItem[] = [
     id: "picasso",
     title: "Picasso",
     subtitle: "해석적 구도와 현대적 실험",
+    concept: "atelier",
     previewClass:
       "bg-[radial-gradient(circle_at_82%_24%,rgba(194,96,111,0.34),transparent_36%),linear-gradient(145deg,#321319_0%,#131115_52%,#28131a_100%)]",
   },
@@ -47,34 +54,39 @@ const styles: StyleItem[] = [
     id: "marvel-hero",
     title: "Marvel Hero",
     subtitle: "강렬한 히어로 조명의 중심",
+    concept: "cinematic",
     previewClass:
-      "bg-[radial-gradient(circle_at_70%_16%,rgba(178,52,70,0.46),transparent_35%),linear-gradient(152deg,#280f19_0%,#101118_54%,#21111a_100%)]",
+      "bg-[radial-gradient(circle_at_70%_16%,rgba(78,130,255,0.32),transparent_35%),linear-gradient(152deg,#111726_0%,#101118_54%,#0f1622_100%)]",
   },
   {
     id: "disney-live-action",
     title: "Disney Live-action",
     subtitle: "따뜻한 시네마틱 실사 감성",
+    concept: "cinematic",
     previewClass:
-      "bg-[radial-gradient(circle_at_22%_12%,rgba(205,118,131,0.36),transparent_34%),linear-gradient(152deg,#34121c_0%,#141117_50%,#24141c_100%)]",
+      "bg-[radial-gradient(circle_at_22%_12%,rgba(80,155,245,0.28),transparent_34%),linear-gradient(152deg,#181b2d_0%,#141117_50%,#1a1f2e_100%)]",
   },
   {
     id: "cyberpunk",
     title: "Cyberpunk",
     subtitle: "네온 대비와 미래 도시 무드",
+    concept: "cinematic",
     previewClass:
-      "bg-[radial-gradient(circle_at_82%_15%,rgba(186,66,87,0.42),transparent_34%),linear-gradient(152deg,#270e17_0%,#100f16_50%,#1b1018_100%)]",
+      "bg-[radial-gradient(circle_at_82%_15%,rgba(79,180,255,0.35),transparent_34%),linear-gradient(152deg,#151827_0%,#100f16_50%,#131927_100%)]",
   },
   {
     id: "western",
     title: "Western",
     subtitle: "드라마틱 역광의 대서사",
+    concept: "cinematic",
     previewClass:
-      "bg-[radial-gradient(circle_at_26%_20%,rgba(163,65,77,0.42),transparent_35%),linear-gradient(145deg,#2f1218_0%,#131014_51%,#241219_100%)]",
+      "bg-[radial-gradient(circle_at_26%_20%,rgba(125,156,218,0.3),transparent_35%),linear-gradient(145deg,#1a1a24_0%,#131014_51%,#202532_100%)]",
   },
 ];
 
 export default function HomePage() {
   const router = useRouter();
+  const [selectedConcept, setSelectedConcept] = useState<ConceptId>("atelier");
   const [selectedStyleId, setSelectedStyleId] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
@@ -87,8 +99,13 @@ export default function HomePage() {
   const springY = useSpring(pointerY, { stiffness: 70, damping: 20, mass: 0.6 });
   const orbTransform = useMotionTemplate`translate3d(${springX}px, ${springY}px, 0)`;
 
+  const conceptStyles = useMemo(() => styles.filter((style) => style.concept === selectedConcept), [selectedConcept]);
   const selectedStyle = useMemo(() => styles.find((style) => style.id === selectedStyleId) ?? null, [selectedStyleId]);
   const canGenerate = Boolean(selectedStyleId && uploadedFile);
+
+  useEffect(() => {
+    setSelectedStyleId(null);
+  }, [selectedConcept]);
 
   const handleFileSelection = (file: File | null) => {
     if (!file) {
@@ -153,7 +170,36 @@ export default function HomePage() {
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-white/10 bg-black/20 px-5 py-8 sm:px-8 lg:px-12"
       >
-        <div className="noise-overlay" />
+        <motion.div
+          animate={{ opacity: selectedConcept === "atelier" ? 1 : 0 }}
+          transition={{ duration: 0.7 }}
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,rgba(120,22,38,0.28),transparent_38%),linear-gradient(155deg,#140f12_0%,#100f12_54%,#1b1116_100%)]"
+        />
+        <motion.div
+          animate={{ opacity: selectedConcept === "cinematic" ? 1 : 0 }}
+          transition={{ duration: 0.7 }}
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_15%,rgba(78,130,255,0.2),transparent_35%),linear-gradient(152deg,#0f121a_0%,#101319_52%,#151a24_100%)]"
+        />
+        <motion.div
+          animate={{ opacity: selectedConcept === "atelier" ? 0.14 : 0 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cfilter id='canvas'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23canvas)' opacity='1'/%3E%3C/svg%3E\")",
+            backgroundSize: "220px 220px",
+          }}
+          className="pointer-events-none absolute inset-0 mix-blend-soft-light"
+        />
+        <motion.div
+          animate={{ opacity: selectedConcept === "cinematic" ? 0.12 : 0 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23grain)' opacity='1'/%3E%3C/svg%3E\")",
+            backgroundSize: "180px 180px",
+          }}
+          className="pointer-events-none absolute inset-0 mix-blend-soft-light"
+        />
         <motion.div
           style={{ transform: orbTransform }}
           className="pointer-events-none absolute -left-12 -top-16 h-56 w-56 rounded-full bg-[#6f1b28]/30 blur-3xl"
@@ -169,18 +215,58 @@ export default function HomePage() {
             PIXS Studio
           </p>
           <h1 className="font-serif-display text-3xl text-[#f8ebee] sm:text-5xl lg:text-6xl">
-            우리 아이의 영혼을 예술로 기록하다
+            당신의 반려동물, 영원히 기억될 하나의 마스터피스가 되다.
           </h1>
           <p className="lux-copy mx-auto mt-5 max-w-3xl text-sm text-white/74 sm:text-base">
-            거장의 터치를 더할 준비가 되셨나요? 웅장한 화풍을 선택하고 사진을 올리면, PIXS가 단 하나의 마스터피스로 완성합니다.
+            거장의 터치를 더할 준비가 되셨나요? PIXS의 두 세계관 중 하나를 선택해, 당신의 가족을 시간 너머의 예술로 남기세요.
           </p>
         </div>
 
+        <section className="relative z-10 mb-12">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <motion.button
+              type="button"
+              onClick={() => setSelectedConcept("atelier")}
+              whileHover={{ scale: 1.02 }}
+              className={`relative overflow-hidden rounded-2xl border p-6 text-left transition ${
+                selectedConcept === "atelier"
+                  ? "border-[#8e2b3a] bg-[linear-gradient(150deg,rgba(67,20,30,0.9),rgba(24,14,16,0.9))]"
+                  : "border-white/12 bg-black/28 hover:border-[#8e2b3a]/55"
+              }`}
+            >
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(167,58,74,0.34),transparent_46%)]" />
+              <p className="font-serif-display relative z-10 text-2xl text-[#f7dfe3]">The Royal Atelier</p>
+              <p className="lux-copy relative z-10 mt-2 text-sm text-[#f2d2d8]/78">
+                17세기 유럽 궁정 화가의 작업실에서 탄생한 듯한 묵직한 고전미.
+              </p>
+            </motion.button>
+
+            <motion.button
+              type="button"
+              onClick={() => setSelectedConcept("cinematic")}
+              whileHover={{ scale: 1.02 }}
+              className={`relative overflow-hidden rounded-2xl border p-6 text-left transition ${
+                selectedConcept === "cinematic"
+                  ? "border-[#4b7dd4] bg-[linear-gradient(150deg,rgba(21,32,54,0.92),rgba(14,16,22,0.9))]"
+                  : "border-white/12 bg-black/28 hover:border-[#4b7dd4]/55"
+              }`}
+            >
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_16%,rgba(75,125,212,0.3),transparent_44%)]" />
+              <p className="font-serif-display relative z-10 text-2xl text-[#e4ebff]">Cine-Matic Paw</p>
+              <p className="lux-copy relative z-10 mt-2 text-sm text-[#d8e4ff]/74">
+                할리우드 영화 포스터 속 주인공이 된 듯한 웅장한 시네마틱 서사.
+              </p>
+            </motion.button>
+          </div>
+        </section>
+
         <div className="relative z-10 mb-12 grid gap-6 lg:grid-cols-[1.55fr_1fr]">
           <div>
-            <h2 className="font-serif-display mb-3 text-xl text-[#f7dfe4] sm:text-2xl">스타일 선택</h2>
+            <h2 className="font-serif-display mb-3 text-xl text-[#f7dfe4] sm:text-2xl">
+              {selectedConcept === "atelier" ? "Atelier 스타일 선택" : "Cine-Matic 스타일 선택"}
+            </h2>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {styles.map((style) => {
+              {conceptStyles.map((style) => {
                 const isSelected = selectedStyleId === style.id;
                 const dimmed = selectedStyleId && !isSelected;
 
@@ -216,9 +302,14 @@ export default function HomePage() {
 
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="rounded-2xl border border-[#800808]/30 bg-[linear-gradient(160deg,rgba(38,17,20,0.72)_10%,rgba(13,12,15,0.68)_100%)] p-5 shadow-[0_20px_40px_rgba(14,6,9,0.45)]"
+            className={`rounded-2xl border p-5 shadow-[0_20px_40px_rgba(14,6,9,0.45)] ${
+              selectedConcept === "atelier"
+                ? "border-[#800808]/30 bg-[linear-gradient(160deg,rgba(38,17,20,0.72)_10%,rgba(13,12,15,0.68)_100%)]"
+                : "border-[#4b7dd4]/35 bg-[linear-gradient(160deg,rgba(19,28,45,0.8)_10%,rgba(12,14,20,0.76)_100%)]"
+            }`}
           >
             <p className="font-serif-display text-lg text-[#f8dde2]">스튜디오 캔버스 테이블</p>
+            <p className="lux-copy mt-1 text-xs text-white/58">이 컨셉으로 기록할 사진 업로드</p>
             <div
               onDragOver={(event) => {
                 event.preventDefault();
@@ -233,8 +324,12 @@ export default function HomePage() {
               }}
               className={`mt-3 rounded-xl border px-5 py-10 text-center transition ${
                 isDragOver
-                  ? "border-[#9b3a49]/80 bg-[linear-gradient(165deg,rgba(128,8,8,0.26),rgba(20,16,19,0.45))]"
-                  : "border-[#800808]/35 bg-[linear-gradient(165deg,rgba(30,15,18,0.58),rgba(11,11,14,0.5))]"
+                  ? selectedConcept === "atelier"
+                    ? "border-[#9b3a49]/80 bg-[linear-gradient(165deg,rgba(128,8,8,0.26),rgba(20,16,19,0.45))]"
+                    : "border-[#4b7dd4]/70 bg-[linear-gradient(165deg,rgba(58,89,162,0.28),rgba(16,18,26,0.45))]"
+                  : selectedConcept === "atelier"
+                    ? "border-[#800808]/35 bg-[linear-gradient(165deg,rgba(30,15,18,0.58),rgba(11,11,14,0.5))]"
+                    : "border-[#4b7dd4]/35 bg-[linear-gradient(165deg,rgba(19,26,40,0.62),rgba(11,11,14,0.5))]"
               }`}
             >
               <p className="lux-copy text-sm text-white/84">작품으로 만들 사진을 이곳에 놓아주세요</p>
@@ -258,6 +353,20 @@ export default function HomePage() {
             )}
           </motion.div>
         </div>
+
+        <section className="relative z-10 mb-14 rounded-2xl border border-white/10 bg-black/24 px-6 py-8 text-center">
+          <h3 className="font-serif-display text-2xl text-[#f7e6ea] sm:text-3xl">Brand Story</h3>
+          <p className="lux-copy mx-auto mt-5 max-w-4xl text-sm text-white/75 sm:text-base">
+            PIXS는 단순히 사진을 변환하는 도구가 아닙니다.
+            <br />
+            우리는 시간을 초월한 거장의 붓 터치와 할리우드 스튜디오의 압도적인 조명을 통해,
+            <br />
+            당신의 가족인 반려동물의 영혼을 예술로 기록하는 디지털 아틀리에입니다.
+          </p>
+          <p className="font-serif-display mt-4 text-base text-[#e2a2aa] sm:text-lg">
+            <span className="text-[#c35060]">마스터피스</span>와 <span className="text-[#c35060]">영원</span>을 위한 한 장의 기록
+          </p>
+        </section>
 
         <div className="relative z-10 mt-7 flex flex-col items-center gap-3">
           <motion.button
