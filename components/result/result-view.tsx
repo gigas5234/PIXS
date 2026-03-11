@@ -58,10 +58,9 @@ export function ResultView({ styleId }: ResultViewProps) {
   const baseImageUrl = currentResultUrl ?? resultImageUrlFromStorage ?? uploadPreviewUrl;
   const storedStyleTitle = typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null;
   const styleTitle = currentStyleTitle || storedStyleTitle || "선택 스타일";
-  // 화면에 보여줄 이미지는 AI가 생성한 원본
-  const displayImageUrl = baseImageUrl;
-  // 다운로드/공유용 이미지는 서명이 합성된 버전이 있으면 그것을 사용
+  // 화면/다운로드/공유 모두 서명 합성본 사용 (있으면), 없으면 원본
   const resultImageUrl = signedImageUrl ?? baseImageUrl;
+  const displayImageUrl = resultImageUrl;
 
   useEffect(() => {
     setCurrentStyleId(styleId);
@@ -162,7 +161,7 @@ export function ResultView({ styleId }: ResultViewProps) {
     const drawSignatureOnCanvas = async () => {
       try {
         const img = new Image();
-        img.crossOrigin = "anonymous";
+        if (baseImageUrl.startsWith("http")) img.crossOrigin = "anonymous";
         img.src = baseImageUrl;
         await new Promise<void>((resolve, reject) => {
           img.onload = () => resolve();
@@ -205,7 +204,7 @@ export function ResultView({ styleId }: ResultViewProps) {
         const charcoal = "#111111";
         const color = avgLuma > 140 ? charcoal : gold;
 
-        const fontSize = Math.max(16, Math.floor(canvas.width * 0.035));
+        const fontSize = Math.max(24, Math.floor(canvas.width * 0.048));
         const fontStack =
           signatureFontStacks[currentStyleId] ??
           `"Cormorant Garamond", "Cormorant", "Playfair Display", "Times New Roman", serif`;
@@ -214,21 +213,21 @@ export function ResultView({ styleId }: ResultViewProps) {
         const text = signatureText;
         const textWidth = ctx.measureText(text).width;
         const x = canvas.width - margin;
-        const y = canvas.height - margin * 0.8;
+        const y = canvas.height - margin * 0.6;
 
-        // 서명 배경: 반투명 패드로 이미지 콘텐츠와 겹쳐 보이지 않게 분리
-        const padH = Math.floor(fontSize * 0.5);
-        const padV = Math.floor(fontSize * 0.4);
+        // 서명 배경: 확실히 보이도록 불투명도 높임
+        const padH = Math.floor(fontSize * 0.6);
+        const padV = Math.floor(fontSize * 0.5);
         const bgX = x - textWidth - padH * 2;
         const bgY = y - fontSize - padV;
         const bgW = textWidth + padH * 2;
         const bgH = fontSize + padV * 2 + Math.floor(fontSize * 0.2);
-        ctx.fillStyle = avgLuma > 140 ? "rgba(0,0,0,0.55)" : "rgba(20,12,8,0.65)";
+        ctx.fillStyle = avgLuma > 140 ? "rgba(0,0,0,0.78)" : "rgba(20,12,8,0.88)";
         ctx.beginPath();
         ctx.rect(bgX, bgY, bgW, bgH);
         ctx.fill();
 
-        ctx.globalAlpha = 0.92;
+        ctx.globalAlpha = 1;
         ctx.textAlign = "right";
         ctx.textBaseline = "bottom";
         ctx.fillStyle = color;
@@ -387,19 +386,19 @@ export function ResultView({ styleId }: ResultViewProps) {
                     )}
                   </AnimatePresence>
 
-                  {/* 서명 애니메이션 오버레이 (우측 하단, 배경으로 겹침 방지) */}
-                  {signatureText && signatureText.trim().length > 0 && (
+                  {/* 서명 오버레이: Canvas 합성 전 로딩 중에만 표시 (합성 완료 시 이미지에 포함됨) */}
+                  {signatureText && signatureText.trim().length > 0 && !signedImageUrl && (
                     <motion.div
                       initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 1] }}
-                      transition={{ duration: 1.6, delay: 0.8, ease: "easeInOut" }}
-                      className="pointer-events-none absolute bottom-3 right-4 rounded px-2.5 py-1.5 text-right"
-                      style={{ background: "rgba(20,12,8,0.65)" }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="pointer-events-none absolute bottom-4 right-5 rounded-md px-4 py-2.5 text-right shadow-lg"
+                      style={{ background: "rgba(20,12,8,0.9)", border: "1px solid rgba(201,162,39,0.4)" }}
                     >
-                      <p className="font-serif text-[11px] text-white/90 tracking-[0.23em]">
+                      <p className="font-serif text-sm text-[#e8d4a0] tracking-[0.2em]">
                         {signatureText}
                       </p>
-                      <div className="mt-0.5 h-px w-full bg-white/70" />
+                      <div className="mt-1 h-px w-full bg-[#c9a227]/60" />
                     </motion.div>
                   )}
                 </div>
