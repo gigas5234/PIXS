@@ -45,6 +45,7 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
     () => visibleStyles.find((style) => style.id === selectedStyleId) ?? null,
     [visibleStyles, selectedStyleId],
   );
+  const hasSelection = selectedStyleId !== null;
 
   const triggerUpload = () => {
     setIsDropzoneOpen(true);
@@ -72,7 +73,7 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
       <div className="mb-7 text-center">
         <p className="text-xs tracking-[0.2em] text-[#a7424f]/85 uppercase">Studio Selector</p>
         <h2 className="font-serif-display mt-3 text-3xl text-[#f9e8eb] sm:text-4xl">당신의 스타일을 선택하세요</h2>
-        <p className="mx-auto mt-3 max-w-2xl text-sm text-white/70 sm:text-base">
+        <p className="lux-copy mx-auto mt-3 max-w-2xl text-sm text-white/70 sm:text-base">
           선택한 메인 컨셉에 맞춰 세부 작가/장르 스타일을 고르고, 이후 AI 프롬프트 주입이 가능한 구조로 확장됩니다.
         </p>
       </div>
@@ -136,11 +137,21 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
                   : { boxShadow: "0 0 0 rgba(94, 11, 21, 0)" }
               }
               transition={{ duration: 1.6, repeat: isSelected ? Infinity : 0, ease: "easeInOut" }}
-              className={`group relative overflow-hidden rounded-2xl border bg-black/40 p-4 text-left backdrop-blur-xl transition ${
+              className={`group relative overflow-hidden rounded-2xl border bg-black/40 p-4 text-left backdrop-blur-xl transition duration-400 ${
                 isSelected ? "border-[#800808]/85" : "border-white/10 hover:border-[#800808]/55"
-              }`}
+              } ${hasSelection && !isSelected ? "opacity-50" : "opacity-100"}`}
             >
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_12%,rgba(128,8,8,0.22),transparent_40%)] opacity-0 transition group-hover:opacity-100" />
+              <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-[#800808]/35 opacity-0 blur-2xl transition duration-500 group-hover:opacity-55" />
+              <motion.div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_12%,rgba(128,8,8,0.22),transparent_40%)] opacity-0 transition group-hover:opacity-100"
+              />
+              <motion.div
+                aria-hidden
+                whileHover={{ scale: 1.04 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                className="absolute inset-x-0 top-0 h-28 origin-center bg-[linear-gradient(145deg,rgba(115,14,25,0.44),rgba(40,16,21,0.16)),radial-gradient(circle_at_18%_10%,rgba(170,70,85,0.32),transparent_56%)]"
+              />
 
               <div className="relative z-10">
                 <div className="flex items-start justify-between gap-2">
@@ -160,7 +171,7 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
                   </AnimatePresence>
                 </div>
 
-                <p className="mt-2 text-xs leading-relaxed text-white/70">{style.description}</p>
+                <p className="lux-copy mt-2 text-xs text-white/72">{style.description}</p>
               </div>
             </motion.button>
           );

@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const notoSans = Noto_Sans_KR({
   subsets: ["latin"],
   variable: "--font-sans",
+  weight: ["300", "400", "500"],
 });
 
-const playfair = Playfair_Display({
+const notoSerif = Noto_Serif_KR({
   subsets: ["latin"],
   variable: "--font-serif",
   weight: ["500", "600", "700"],
@@ -23,7 +24,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body className={`${inter.variable} ${playfair.variable} bg-[#121212] text-white antialiased`}>
+      <body className={`${notoSans.variable} ${notoSerif.variable} bg-[#121212] text-white antialiased`}>
         {children}
       </body>
     </html>

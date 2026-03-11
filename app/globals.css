@@ -8,6 +8,10 @@
 
 body {
   min-height: 100vh;
+  font-family: var(--font-sans), "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.015em;
+  line-height: 1.7;
   background:
     radial-gradient(circle at 20% 10%, rgba(94, 11, 21, 0.22), transparent 35%),
     radial-gradient(circle at 80% 18%, rgba(127, 182, 255, 0.1), transparent 38%),
@@ -16,7 +20,15 @@ body {
 }
 
 .font-serif-display {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-serif), "Noto Serif KR", "Source Han Serif", serif;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+}
+
+.lux-copy {
+  font-weight: 300;
+  line-height: 1.85;
+  letter-spacing: 0.02em;
 }
 
 .noise-overlay {

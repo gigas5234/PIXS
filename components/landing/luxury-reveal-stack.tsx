@@ -31,7 +31,7 @@ export function LuxuryRevealStack() {
             className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm"
           >
             <h4 className="font-serif-display text-xl text-[#d58a95]">{item.title}</h4>
-            <p className="mt-2 text-sm leading-relaxed text-white/72">{item.description}</p>
+            <p className="lux-copy mt-2 text-sm text-white/72">{item.description}</p>
           </motion.div>
         ))}
       </motion.div>

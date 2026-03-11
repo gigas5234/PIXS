@@ -39,7 +39,7 @@ export function DualThemeSelector() {
               The Royal Atelier
             </span>
             <h3 className="font-serif-display mt-5 text-2xl text-[#fae7ea] sm:text-[2rem]">고전 유화의 품격</h3>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-[#f2ead2]/80">
+            <p className="lux-copy mt-3 max-w-md text-sm text-[#f2ead2]/80">
               렘브란트의 명암, 베르메르의 부드러운 빛, 고흐의 질감을 결합한 궁정 화가 스타일.
             </p>
           </div>
@@ -64,7 +64,7 @@ export function DualThemeSelector() {
               Cine-Matic Paw
             </span>
             <h3 className="font-serif-display mt-5 text-2xl text-[#fcecef] sm:text-[2rem]">웅장한 시네마틱 무드</h3>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-[#f2d4d8]/80">
+            <p className="lux-copy mt-3 max-w-md text-sm text-[#f2d4d8]/80">
               히어로 포스터의 강렬한 조명과 네온 무드를 결합해 반려동물을 영화 주인공으로 연출.
             </p>
           </div>
