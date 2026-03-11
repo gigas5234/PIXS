@@ -102,6 +102,8 @@ export default function HomePage() {
   const conceptStyles = useMemo(() => styles.filter((style) => style.concept === selectedConcept), [selectedConcept]);
   const selectedStyle = useMemo(() => styles.find((style) => style.id === selectedStyleId) ?? null, [selectedStyleId]);
   const canGenerate = Boolean(selectedStyleId && uploadedFile);
+  const accentPrimary = selectedConcept === "atelier" ? "#800808" : "#4b7dd4";
+  const accentSecondaryText = selectedConcept === "atelier" ? "text-[#f3c7ce]" : "text-[#d9e5ff]";
 
   useEffect(() => {
     setSelectedStyleId(null);
@@ -218,7 +220,7 @@ export default function HomePage() {
             당신의 반려동물, 영원히 기억될 하나의 마스터피스가 되다.
           </h1>
           <p className="lux-copy mx-auto mt-5 max-w-3xl text-sm text-white/74 sm:text-base">
-            거장의 터치를 더할 준비가 되셨나요? PIXS의 두 세계관 중 하나를 선택해, 당신의 가족을 시간 너머의 예술로 남기세요.
+            PIXS는 시간을 초월한 거장의 붓 터치와 할리우드의 웅장한 조명을 통해 당신의 가족을 예술로 기록하는 디지털 아틀리에입니다.
           </p>
         </div>
 
@@ -228,7 +230,7 @@ export default function HomePage() {
               type="button"
               onClick={() => setSelectedConcept("atelier")}
               whileHover={{ scale: 1.02 }}
-              className={`relative overflow-hidden rounded-2xl border p-6 text-left transition ${
+              className={`relative overflow-hidden rounded-2xl border p-6 text-left transition-[all] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                 selectedConcept === "atelier"
                   ? "border-[#8e2b3a] bg-[linear-gradient(150deg,rgba(67,20,30,0.9),rgba(24,14,16,0.9))]"
                   : "border-white/12 bg-black/28 hover:border-[#8e2b3a]/55"
@@ -245,7 +247,7 @@ export default function HomePage() {
               type="button"
               onClick={() => setSelectedConcept("cinematic")}
               whileHover={{ scale: 1.02 }}
-              className={`relative overflow-hidden rounded-2xl border p-6 text-left transition ${
+              className={`relative overflow-hidden rounded-2xl border p-6 text-left transition-[all] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                 selectedConcept === "cinematic"
                   ? "border-[#4b7dd4] bg-[linear-gradient(150deg,rgba(21,32,54,0.92),rgba(14,16,22,0.9))]"
                   : "border-white/12 bg-black/28 hover:border-[#4b7dd4]/55"
@@ -276,20 +278,36 @@ export default function HomePage() {
                     type="button"
                     onClick={() => setSelectedStyleId(style.id)}
                     whileHover={{ y: -4, scale: 1.02 }}
-                    className={`group relative overflow-hidden rounded-[1.2rem] border bg-black/35 p-4 text-left shadow-[0_10px_28px_rgba(18,8,10,0.4)] backdrop-blur-xl transition duration-400 ${
-                      isSelected ? "border-[#800808]/90" : "border-white/10 hover:border-[#800808]/55"
+                    className={`group relative overflow-hidden rounded-[1.2rem] border bg-black/35 p-4 text-left shadow-[0_10px_28px_rgba(18,8,10,0.4)] backdrop-blur-xl transition-[all] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                      isSelected
+                        ? selectedConcept === "atelier"
+                          ? "border-[#800808]/90"
+                          : "border-[#4b7dd4]/90"
+                        : selectedConcept === "atelier"
+                          ? "border-white/10 hover:border-[#800808]/55"
+                          : "border-white/10 hover:border-[#4b7dd4]/60"
                     } ${dimmed ? "opacity-50" : "opacity-100"}`}
                   >
                     <div
                       className={`absolute inset-0 scale-[1.02] opacity-0 transition duration-500 group-hover:opacity-100 group-hover:scale-[1.06] ${style.previewClass}`}
                     />
-                    <div className="pointer-events-none absolute -inset-3 -z-10 rounded-3xl bg-[#800808]/35 opacity-0 blur-2xl transition duration-500 group-hover:opacity-60" />
+                    <div
+                      className={`pointer-events-none absolute -inset-3 -z-10 rounded-3xl opacity-0 blur-2xl transition duration-500 group-hover:opacity-60 ${
+                        selectedConcept === "atelier" ? "bg-[#800808]/35" : "bg-[#4b7dd4]/30"
+                      }`}
+                    />
 
                     <div className="relative z-10">
                       <p className="font-serif-display text-lg text-[#f8e1e6]">{style.title}</p>
                       <p className="lux-copy mt-2 text-xs text-white/72">{style.subtitle}</p>
                       {isSelected && (
-                        <span className="mt-3 inline-block rounded-full border border-[#800808]/70 bg-[#800808]/30 px-2.5 py-1 text-[10px] tracking-wide text-[#f3c7ce]">
+                        <span
+                          className={`mt-3 inline-block rounded-full px-2.5 py-1 text-[10px] tracking-wide ${
+                            selectedConcept === "atelier"
+                              ? "border border-[#800808]/70 bg-[#800808]/30 text-[#f3c7ce]"
+                              : "border border-[#4b7dd4]/70 bg-[#4b7dd4]/25 text-[#d9e5ff]"
+                          }`}
+                        >
                           선택됨
                         </span>
                       )}
@@ -322,7 +340,7 @@ export default function HomePage() {
                 const file = event.dataTransfer.files?.[0] ?? null;
                 handleFileSelection(file);
               }}
-              className={`mt-3 rounded-xl border px-5 py-10 text-center transition ${
+              className={`relative mt-3 rounded-xl border px-5 py-10 text-center transition-[all] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                 isDragOver
                   ? selectedConcept === "atelier"
                     ? "border-[#9b3a49]/80 bg-[linear-gradient(165deg,rgba(128,8,8,0.26),rgba(20,16,19,0.45))]"
@@ -332,9 +350,23 @@ export default function HomePage() {
                     : "border-[#4b7dd4]/35 bg-[linear-gradient(165deg,rgba(19,26,40,0.62),rgba(11,11,14,0.5))]"
               }`}
             >
+              <motion.div
+                aria-hidden
+                animate={
+                  isDragOver
+                    ? {
+                        opacity: [0.15, 0.34, 0.15],
+                        scale: [0.98, 1.02, 0.98],
+                      }
+                    : { opacity: 0, scale: 1 }
+                }
+                transition={{ duration: 1.2, repeat: isDragOver ? Infinity : 0, ease: "easeInOut" }}
+                className="pointer-events-none absolute inset-3 rounded-lg bg-[radial-gradient(circle_at_30%_22%,rgba(146,36,51,0.35),transparent_56%)]"
+              />
+              <div className="pointer-events-none absolute inset-4 rounded-md border border-white/12" />
               <p className="lux-copy text-sm text-white/84">작품으로 만들 사진을 이곳에 놓아주세요</p>
               <p className="mt-2 text-xs text-white/56">사진 인화 테이블 위에 올리듯, 드래그 앤 드롭으로 업로드해 주세요</p>
-              <label className="mt-5 inline-block cursor-pointer rounded-full border border-white/20 bg-white/6 px-4 py-2 text-xs text-white/80 hover:bg-white/12">
+              <label className="mt-5 inline-block cursor-pointer rounded-full border border-white/20 bg-white/6 px-4 py-2 text-xs text-white/80 transition-[all] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-white/12">
                 파일 선택
                 <input
                   type="file"
@@ -363,9 +395,27 @@ export default function HomePage() {
             <br />
             당신의 가족인 반려동물의 영혼을 예술로 기록하는 디지털 아틀리에입니다.
           </p>
-          <p className="font-serif-display mt-4 text-base text-[#e2a2aa] sm:text-lg">
-            <span className="text-[#c35060]">마스터피스</span>와 <span className="text-[#c35060]">영원</span>을 위한 한 장의 기록
-          </p>
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12 } } }}
+            className="mt-4"
+          >
+            {["마스터피스", "영원", "기록"].map((word) => (
+              <motion.p
+                key={word}
+                variants={{
+                  hidden: { opacity: 0, y: 12 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+                }}
+                className={`font-serif-display text-base sm:text-lg ${accentSecondaryText}`}
+                style={{ color: accentPrimary }}
+              >
+                {word}
+              </motion.p>
+            ))}
+          </motion.div>
         </section>
 
         <div className="relative z-10 mt-7 flex flex-col items-center gap-3">
@@ -374,7 +424,7 @@ export default function HomePage() {
             onClick={handleGenerate}
             disabled={!canGenerate || isGenerating}
             whileHover={canGenerate ? { scale: 1.02 } : undefined}
-            className={`gold-border-glow rounded-full px-9 py-3 text-sm font-semibold tracking-wide transition ${
+            className={`gold-border-glow rounded-full px-9 py-3 text-sm font-semibold tracking-wide transition-[all] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
               canGenerate
                 ? "bg-[#2a0f15]/90 text-[#f5ccd3] hover:bg-[#38111b]"
                 : "cursor-not-allowed border-white/20 bg-white/8 text-white/45"
@@ -388,19 +438,29 @@ export default function HomePage() {
         <section className="relative z-10 mt-14">
           <p className="mb-3 text-center text-xs tracking-[0.2em] text-[#a95a66] uppercase">Curator Gallery</p>
           <h3 className="font-serif-display text-center text-2xl text-[#f8e6ea] sm:text-3xl">큐레이터 갤러리</h3>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12 } } }}
+            className="mt-6 grid gap-4 sm:grid-cols-3"
+          >
             {styles.slice(0, 3).map((style) => (
               <motion.article
                 key={`gallery-${style.id}`}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+                }}
                 whileHover={{ scale: 1.02 }}
-                className="overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-3"
+                className="overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-3 transition-[all] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
               >
                 <div className={`aspect-[4/5] rounded-xl ${style.previewClass}`} />
                 <p className="font-serif-display mt-3 text-base text-[#f2d5db]">{style.title}</p>
                 <p className="lux-copy mt-1 text-xs text-white/64">{style.subtitle}</p>
               </motion.article>
             ))}
-          </div>
+          </motion.div>
         </section>
       </motion.section>
     </main>
