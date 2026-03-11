@@ -56,3 +56,12 @@ body {
   border: 1px solid rgba(128, 8, 8, 0.9);
   animation: borderPulse 2.4s ease-in-out infinite;
 }
+
+/* Hide scrollbar while keeping scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
