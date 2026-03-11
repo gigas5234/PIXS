@@ -12,7 +12,7 @@
 - #DarkVoid
 
 ## Prompt
-"A masterwork of heavily textured, physically layered paint. A master-level oil painting of the subject pet, presented as a full-body portrait. Heavy, sculpted impasto oil paint texture. Visible, highly defined brushstrokes that build up layers of physical paint. A clear, gritty canvas grain textured background. Strictly exclude all artist's tools, easels, paintbrushes, and other objects from the scene. The background is a complete, absolute, seamless dark black void, completely dark and devoid of any artist's materials, extending indefinitely.
+"A masterwork of heavily textured, physically layered paint. A master-level oil painting of the subject pet [1] from the uploaded image, presented as a full-body portrait. Heavy, sculpted impasto oil paint texture. Visible, highly defined brushstrokes that build up layers of physical paint. A clear, gritty canvas grain textured background. Strictly exclude all artist's tools, easels, paintbrushes, and other objects from the scene. The background is a complete, absolute, seamless dark black void, completely dark and devoid of any artist's materials, extending indefinitely.
 
 All attention is focused on the pet, seated in a formal, elegant upright 'royal' pose, looking directly and confidently at the viewer. The fur is rendered by heavy, multi-directional, expressive brushstrokes that give it a tactile, 3D relief quality—sculpted with thick paint, not smoothly blended. The lighting is pure, intense, classical Rembrandt lighting (chiaroscuro), with a single, powerful light source from the upper left; light sources are defined by heavy dabs of pure pigment, creating raised ridges of paint, while casting the other half into velvety, deep shadows that merge with the dark background.
 

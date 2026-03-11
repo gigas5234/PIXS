@@ -12,7 +12,7 @@
 - #ChromeTexture
 
 ## Prompt
-"A master-level, ultra-high-definition futuristic cyberpunk portrait of the subject pet. Strictly exclude all traditional artist's tools, easels, and historical props. The background is a dark, rainy neo-metropolis studio void, featuring sharp reflective puddles on a polished matte-black chrome floor that extends into a seamless dark void.
+"A master-level, ultra-high-definition futuristic cyberpunk portrait of the subject pet [1] from the uploaded image. Strictly exclude all traditional artist's tools, easels, and historical props. The background is a dark, rainy neo-metropolis studio void, featuring sharp reflective puddles on a polished matte-black chrome floor that extends into a seamless dark void.
 
 All attention is focused on the pet, sitting in a sharp, alert upright pose with a confident and intense gaze. It features subtle, integrated cybernetic enhancements: a glowing cyan LED ocular lens over one eye and a sleek, carbon-fiber tactical chest plate with exposed glowing internal circuitry. Small, floating holographic HUD (Heads-Up Display) elements orbit the pet, displaying glowing amber bio-data.
 

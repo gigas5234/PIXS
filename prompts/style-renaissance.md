@@ -12,7 +12,7 @@
 - #Symmetry
 
 ## Prompt
-"A master-level, symmetrical and formal Renaissance-era oil portrait of the subject pet, presented as a full-body masterpiece. Strictly exclude all artist's tools, easels, and modern studio clutter. The background is a complete, absolute, seamless dark charcoal void, suggesting an infinite, noble space. 
+"A master-level, symmetrical and formal Renaissance-era oil portrait of the subject pet [1] from the uploaded image, presented as a full-body masterpiece. Strictly exclude all artist's tools, easels, and modern studio clutter. The background is a complete, absolute, seamless dark charcoal void, suggesting an infinite, noble space. 
 
 All attention is focused on the pet, seated in a perfectly centered, majestic upright posture with a regal and steady gaze directed at the viewer. It is dressed in an opulent Renaissance wardrobe: a heavy deep-crimson velvet mantle lined with white ermine fur, and an intricate, stiff gold-thread ruff collar. Small ornamental rubies are embedded in the collar, reflecting the warm, noble studio lighting. 
 
