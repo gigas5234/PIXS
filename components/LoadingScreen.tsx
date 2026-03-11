@@ -34,69 +34,56 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className={`mx-auto max-w-full ${className}`}
-      style={{ width: CANVAS_SIZE }}
+      className={`mx-auto flex flex-col items-center ${className}`}
     >
-      {/* 배경: 깊이감 있는 다크 모드 */}
-      <div
-        className="relative mx-auto overflow-hidden rounded-2xl border border-white/[0.06]"
-        style={{
-          width: CANVAS_SIZE,
-          height: CANVAS_SIZE,
-          background:
-            "radial-gradient(circle at 18% 0%, rgba(180,93,105,0.22) 0%, transparent 45%), radial-gradient(circle at 80% 100%, rgba(128,8,8,0.38) 0%, rgba(5,3,8,1) 55%)",
-          boxShadow:
-            "0 0 0 1px rgba(0,0,0,0.85), 0 26px 80px rgba(0,0,0,0.9), inset 0 0 40px rgba(0,0,0,0.7)",
-        }}
-      >
-        {/* 중앙 PIXS 로고 */}
-        <div className="flex h-full items-center justify-center">
-          <div className="relative">
-            <div className="mx-auto flex items-center justify-center">
-              <span className="font-serif-display text-4xl font-bold tracking-[0.45em] text-white/92">
-                PIXS
-              </span>
-            </div>
-            {/* 로고 내부 Gradient Sweep */}
-            <motion.div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 mx-auto w-full"
-              style={{
-                maskImage:
-                  "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
-              }}
-              initial={{ backgroundPositionX: "-100%" }}
-              animate={{ backgroundPositionX: "200%" }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <div
-                className="h-10 w-full"
-                style={{
-                  backgroundImage: `linear-gradient(120deg, transparent 0%, ${CRIMSON_SOFT} 25%, #f0cad0 50%, ${CRIMSON_SOFT} 75%, transparent 100%)`,
-                  backgroundSize: "220% 100%",
-                  mixBlendMode: "screen",
-                }}
-              />
-            </motion.div>
-          </div>
-        </div>
+      {/* 중앙 PIXS 로고 */}
+      <div className="relative flex items-center justify-center">
+        <span className="font-serif-display text-3xl font-bold tracking-[0.5em] text-white/90">
+          PIXS
+        </span>
+        {/* 로고 내부 Gradient Sweep */}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            maskImage:
+              "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
+          }}
+          initial={{ backgroundPositionX: "-100%" }}
+          animate={{ backgroundPositionX: "200%" }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div
+            className="h-8 w-full"
+            style={{
+              backgroundImage: `linear-gradient(120deg, transparent 0%, ${CRIMSON_SOFT} 25%, #f0cad0 50%, ${CRIMSON_SOFT} 75%, transparent 100%)`,
+              backgroundSize: "220% 100%",
+              mixBlendMode: "screen",
+            }}
+          />
+        </motion.div>
+      </div>
 
-        {/* 섬세한 Crimson 프로그레스 라인 */}
-        <div className="pointer-events-none absolute bottom-6 left-7 right-7">
-          <div className="h-px w-full overflow-hidden rounded-full bg-white/6">
-            <motion.div
-              className="h-full"
-              style={{
-                backgroundImage: `linear-gradient(90deg, rgba(180,93,105,0.18), ${CRIMSON_SOFT}, ${CRIMSON})`,
-                boxShadow: "0 0 10px rgba(180,93,105,0.8)",
-              }}
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.25 }}
-            />
-          </div>
+      {/* PIXS 로딩 상태 문구 */}
+      <p className="mt-3 text-[10px] uppercase tracking-[0.32em] text-[#b45d69]">
+        PIXS Loading
+      </p>
+
+      {/* 섬세한 Crimson 프로그레스 라인 */}
+      <div className="mt-4 w-full max-w-xs">
+        <div className="h-px w-full overflow-hidden rounded-full bg-white/5">
+          <motion.div
+            className="h-full"
+            style={{
+              backgroundImage: `linear-gradient(90deg, rgba(180,93,105,0.18), ${CRIMSON_SOFT}, ${CRIMSON})`,
+              boxShadow: "0 0 10px rgba(180,93,105,0.8)",
+            }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.25 }}
+          />
         </div>
       </div>
 
@@ -104,9 +91,9 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
       <motion.p
         key={phrase}
         initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: [0.35, 0.75, 0.35], y: 0 }}
-        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-        className="mt-5 text-center text-xs text-white/80"
+        animate={{ opacity: [0.3, 0.8, 0.3], y: 0 }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+        className="mt-4 text-center text-xs text-white/80"
       >
         {phrase}
       </motion.p>

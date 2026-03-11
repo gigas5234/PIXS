@@ -460,15 +460,15 @@ export default function HomePage() {
           transition={{ duration: 0.55, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="mx-auto mb-10 max-w-6xl"
         >
-          <div className="overflow-x-auto pb-2 scrollbar-hide">
-            <div className="flex min-w-max gap-2">
+          <div className="overflow-x-auto md:overflow-visible pb-2 scrollbar-hide">
+            <div className="flex flex-nowrap md:flex-wrap gap-2">
 
               {/* Atelier group */}
               <div>
                 <p className="mb-3 text-[9px] tracking-[0.32em] text-[#d2a2aa] uppercase">
                   The Classic Suite · I
                 </p>
-                <div className="flex gap-2.5">
+                <div className="flex gap-2.5 md:flex-wrap">
                   {STYLES.slice(0, 5).map((style) => (
                     <DockCard
                       key={style.id}
@@ -490,7 +490,7 @@ export default function HomePage() {
                 <p className="mb-3 text-[9px] tracking-[0.32em] text-[#a2aad2] uppercase">
                   The Modern Gallery · II
                 </p>
-                <div className="flex gap-2.5">
+                <div className="flex gap-2.5 md:flex-wrap">
                   {STYLES.slice(5).map((style) => (
                     <DockCard
                       key={style.id}
