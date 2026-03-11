@@ -20,9 +20,6 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
 }
 
 export function ResultView({ styleId }: ResultViewProps) {
-  // 흘려쓰는 필기체 스타일 — 모든 스타일 공통 (날려쓰기 느낌)
-  const signatureFontStack = `"Dancing Script", "Great Vibes", "Nanum Pen Script", "Brush Script MT", "Segoe Script", "Apple Chancery", cursive`;
-
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -35,30 +32,21 @@ export function ResultView({ styleId }: ResultViewProps) {
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
   const [resultImageUrlFromStorage, setResultImageUrlFromStorage] = useState<string | null>(null);
   const [signatureText, setSignatureText] = useState<string | null>(null);
-  const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
 
   // sessionStorage는 클라이언트에서만 유효 — useEffect로 마운트 후 로드 (SSR hydration 시 null 방지)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setMounted(true);
     setUploadPreviewUrl(sessionStorage.getItem("pixs:uploadPreviewUrl"));
     setResultImageUrlFromStorage(sessionStorage.getItem("pixs:resultImageUrl"));
     setSignatureText(sessionStorage.getItem("pixs:signatureText"));
   }, []);
 
-  // 마운트 후 sessionStorage 직접 참조 (state 업데이트 타이밍 이슈 대비)
-  const displaySignature =
-    (mounted && typeof window !== "undefined"
-      ? (signatureText ?? sessionStorage.getItem("pixs:signatureText"))
-      : signatureText) ?? "";
-
   const baseImageUrl = currentResultUrl ?? resultImageUrlFromStorage ?? uploadPreviewUrl;
   const storedStyleTitle = typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null;
   const styleTitle = currentStyleTitle || storedStyleTitle || "선택 스타일";
-  // 화면/다운로드/공유 모두 서명 합성본 사용 (있으면), 없으면 원본
-  const resultImageUrl = signedImageUrl ?? baseImageUrl;
-  const displayImageUrl = resultImageUrl;
+  // AI가 이미지에 서명을 포함하므로 Canvas 후처리 없이 원본 사용 (노란색 중복 제거)
+  const displayImageUrl = baseImageUrl;
+  const resultImageUrl = baseImageUrl;
 
   useEffect(() => {
     setCurrentStyleId(styleId);
@@ -138,7 +126,6 @@ export function ResultView({ styleId }: ResultViewProps) {
       setCurrentStyleId(newStyleId);
       setSelectedStyleId(newStyleId);
       setCurrentStyleTitle(RESULT_STYLES.find((s) => s.id === newStyleId)?.title ?? newStyleId);
-      setSignedImageUrl(null);
       if (typeof window !== "undefined") {
         sessionStorage.setItem("pixs:resultImageUrl", data.imageUrl);
         sessionStorage.setItem("pixs:selectedStyle", newStyleId);
@@ -150,111 +137,6 @@ export function ResultView({ styleId }: ResultViewProps) {
       setIsRegenerating(false);
     }
   }, [isRegenerating, currentStyleId, router]);
-
-  // Canvas 후처리로 서명 합성
-  useEffect(() => {
-    if (!baseImageUrl || !signatureText || signatureText.trim().length === 0) return;
-    let cancelled = false;
-
-    const drawSignatureOnCanvas = async () => {
-      try {
-        const img = new Image();
-        if (baseImageUrl.startsWith("http")) img.crossOrigin = "anonymous";
-        img.src = baseImageUrl;
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error("Failed to load image for signature"));
-        });
-
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        ctx.drawImage(img, 0, 0);
-
-        // 평균 밝기 샘플링 (우측 하단 작은 영역)
-        // 서명 영역: 10% 마진으로 확보해 이미지 콘텐츠와 겹침 방지
-        const margin = Math.floor(canvas.width * 0.10);
-        const sampleX = canvas.width - margin * 2;
-        const sampleY = canvas.height - margin * 2;
-        const sampleWidth = margin * 2;
-        const sampleHeight = margin * 2;
-        const sample = ctx.getImageData(
-          Math.max(0, sampleX),
-          Math.max(0, sampleY),
-          Math.max(1, sampleWidth),
-          Math.max(1, sampleHeight),
-        );
-        let totalLuma = 0;
-        const data = sample.data;
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          totalLuma += l;
-        }
-        const avgLuma = totalLuma / (data.length / 4 || 1);
-
-        const gold = "#DAA520";
-        const charcoal = "#111111";
-        const color = avgLuma > 140 ? charcoal : gold;
-
-        const fontSize = Math.max(26, Math.floor(canvas.width * 0.05));
-        const fontStack = `${signatureFontStack}, "Noto Sans KR", "Malgun Gothic", sans-serif`;
-        ctx.save();
-        ctx.font = `${fontSize}px ${fontStack}`;
-        const text = signatureText;
-        const textWidth = ctx.measureText(text).width;
-        const x = canvas.width - margin;
-        const y = canvas.height - margin * 0.6;
-
-        // 흘려쓰는 서명 — 얇은 반투명 배경만 (박스 느낌 최소화)
-        const padH = Math.floor(fontSize * 0.4);
-        const padV = Math.floor(fontSize * 0.35);
-        const bgX = x - textWidth - padH * 2;
-        const bgY = y - fontSize - padV;
-        const bgW = textWidth + padH * 2;
-        const bgH = fontSize + padV * 2;
-        ctx.fillStyle = avgLuma > 140 ? "rgba(0,0,0,0.5)" : "rgba(20,12,8,0.55)";
-        ctx.beginPath();
-        ctx.rect(bgX, bgY, bgW, bgH);
-        ctx.fill();
-
-        ctx.globalAlpha = 1;
-        ctx.textAlign = "right";
-        ctx.textBaseline = "bottom";
-        ctx.fillStyle = color;
-        ctx.fillText(text, x, y);
-        // 가볍게 흘려쓴 밑줄
-        const underlineOffset = Math.floor(fontSize * 0.12);
-        ctx.beginPath();
-        ctx.moveTo(x - textWidth * 0.3, y + underlineOffset);
-        ctx.lineTo(x, y + underlineOffset);
-        ctx.lineWidth = Math.max(1, Math.floor(fontSize * 0.04));
-        ctx.strokeStyle = color;
-        ctx.globalAlpha = 0.85;
-        ctx.stroke();
-        ctx.restore();
-
-        const url = canvas.toDataURL("image/png");
-        if (!cancelled) {
-          setSignedImageUrl(url);
-        }
-      } catch {
-        // 실패 시 원본 이미지를 그대로 사용
-        setSignedImageUrl(null);
-      }
-    };
-
-    drawSignatureOnCanvas();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [baseImageUrl, signatureText, currentStyleId]);
 
   const handleDownload = () => {
     if (!resultImageUrl) return;
@@ -382,26 +264,6 @@ export function ResultView({ styleId }: ResultViewProps) {
                       </motion.div>
                     )}
                   </AnimatePresence>
-
-                  {/* 서명 오버레이: Canvas 합성 전/실패 시에만 표시 (겹침 방지 — 합성 완료 시 이미지에만 표시) */}
-                  {displaySignature.trim().length > 0 && !signedImageUrl && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                      className="pointer-events-none absolute bottom-4 right-5 z-10 rounded-md px-4 py-2 text-right"
-                      style={{
-                        background: "rgba(20,12,8,0.7)",
-                        border: "1px solid rgba(201,162,39,0.4)",
-                        fontFamily: "var(--font-signature), var(--font-signature-kr), 'Dancing Script', 'Nanum Pen Script', cursive",
-                      }}
-                    >
-                      <p className="text-lg text-[#e8d4a0]">
-                        {displaySignature}
-                      </p>
-                      <div className="mt-0.5 h-px w-3/4 ml-auto bg-[#c9a227]/50" />
-                    </motion.div>
-                  )}
                 </div>
 
                 <p className="mt-4 text-center font-serif-display text-sm text-[#e8c4c9]">{styleTitle}</p>
