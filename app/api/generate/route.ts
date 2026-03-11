@@ -193,20 +193,20 @@ export async function POST(request: NextRequest) {
       detail: { referenceId: REFERENCE_ID, promptContainsRef: prompt.includes(`[${REFERENCE_ID}]`) },
     });
 
-    // Nano Banana (Gemini 2.0 Flash Experimental) 이미지 생성 요청
+    // Nano Banana (Gemini 2.5 Flash Image) 이미지 생성 요청
     debug.push({
       step: "call_generate_content_image",
       detail: {
-        model: "gemini-2.0-flash-001",
+        model: "gemini-2.5-flash-image",
         project: projectId,
         location,
         species,
       },
     });
 
-    // Gemini 2.0 Flash Experimental (Vertex AI) - generateContent를 통해 이미지 생성
+    // Gemini 2.5 Flash Image (Nano Banana) - generateContent를 통해 이미지 생성
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-001",
+      model: "gemini-2.5-flash-image",
       contents: [
         { inlineData: { data: base64, mimeType } },
         { text: prompt }
