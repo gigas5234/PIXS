@@ -193,32 +193,49 @@ export async function POST(request: NextRequest) {
       detail: { referenceId: REFERENCE_ID, promptContainsRef: prompt.includes(`[${REFERENCE_ID}]`) },
     });
 
-    // Nano Banana (Gemini 2.5 Flash Image) 이미지 생성 요청
+    // 참조 이미지 고정: 업로드된 이미지를 항상 첫 번째 입력(input_file_0 / referenceId 1)로 할당
+    const subjectRef = new SubjectReferenceImage();
+    subjectRef.referenceImage = { imageBytes: base64, mimeType };
+    subjectRef.referenceId = REFERENCE_ID;
+    subjectRef.config = {
+      subjectType: SubjectReferenceType.SUBJECT_TYPE_ANIMAL,
+      subjectDescription:
+        "The specific pet with its unique breed, fur pattern, facial structure, and identity. Recreate this exact animal, not a generic one.",
+    };
+
+    // Nano Banana (Gemini 2.5 Flash Image) 편집 모델로 정체성 유지하며 생성
     debug.push({
-      step: "call_generate_content_image",
+      step: "call_edit_image",
       detail: {
         model: "gemini-2.5-flash-image",
         project: projectId,
         location,
+        referenceId: REFERENCE_ID,
         species,
+        imageSizeBytes: imageSize,
+        referenceImageWeight: 0.95,
+        subjectConsistency: 0.95,
+        guidanceScale: 60,
       },
     });
 
-    // Gemini 2.5 Flash Image (Nano Banana) - generateContent를 통해 이미지 생성
-    const response = await ai.models.generateContent({
+    const editConfig = {
+      numberOfImages: 1,
+      aspectRatio: "1:1" as const,
+      guidanceScale: 60,
+      referenceImageWeight: 0.95,
+      subjectConsistency: 0.95,
+    };
+
+    const response = await ai.models.editImage({
       model: "gemini-2.5-flash-image",
-      contents: [
-        { inlineData: { data: base64, mimeType } },
-        { text: prompt }
-      ],
-      config: {
-        // 응답으로 텍스트 대신 이미지를 반환하도록 지시
-        responseModalities: ["IMAGE"],
-      },
+      prompt,
+      referenceImages: [subjectRef],
+      config: editConfig,
     });
 
-    const part = response.candidates?.[0]?.content?.parts?.[0];
-    const imageBytes = part?.inlineData?.data;
+    const generatedImage = response.generatedImages?.[0];
+    const imageBytes = generatedImage?.image?.imageBytes;
 
     if (!imageBytes) {
       debug.push({ step: "response", error: "No image in response", detail: response });
