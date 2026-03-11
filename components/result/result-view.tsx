@@ -48,14 +48,22 @@ export function ResultView({ styleId }: ResultViewProps) {
   const [resultImageUrlFromStorage, setResultImageUrlFromStorage] = useState<string | null>(null);
   const [signatureText, setSignatureText] = useState<string | null>(null);
   const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   // sessionStorage는 클라이언트에서만 유효 — useEffect로 마운트 후 로드 (SSR hydration 시 null 방지)
   useEffect(() => {
     if (typeof window === "undefined") return;
+    setMounted(true);
     setUploadPreviewUrl(sessionStorage.getItem("pixs:uploadPreviewUrl"));
     setResultImageUrlFromStorage(sessionStorage.getItem("pixs:resultImageUrl"));
     setSignatureText(sessionStorage.getItem("pixs:signatureText"));
   }, []);
+
+  // 마운트 후 sessionStorage 직접 참조 (state 업데이트 타이밍 이슈 대비)
+  const displaySignature =
+    (mounted && typeof window !== "undefined"
+      ? (signatureText ?? sessionStorage.getItem("pixs:signatureText"))
+      : signatureText) ?? "";
 
   const baseImageUrl = currentResultUrl ?? resultImageUrlFromStorage ?? uploadPreviewUrl;
   const storedStyleTitle = typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null;
@@ -390,16 +398,16 @@ export function ResultView({ styleId }: ResultViewProps) {
                   </AnimatePresence>
 
                   {/* 서명 오버레이: 서명이 있으면 항상 표시 (Canvas 합성 실패/대기 시에도 확실히 보이도록) */}
-                  {signatureText && signatureText.trim().length > 0 && (
+                  {displaySignature.trim().length > 0 && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.5 }}
-                      className="pointer-events-none absolute bottom-4 right-5 rounded-md px-4 py-2.5 text-right shadow-lg"
-                      style={{ background: "rgba(20,12,8,0.9)", border: "1px solid rgba(201,162,39,0.4)" }}
+                      className="pointer-events-none absolute bottom-4 right-5 z-10 rounded-md px-4 py-2.5 text-right shadow-xl"
+                      style={{ background: "rgba(20,12,8,0.95)", border: "2px solid rgba(201,162,39,0.6)" }}
                     >
-                      <p className="font-serif text-sm text-[#e8d4a0] tracking-[0.2em]">
-                        {signatureText}
+                      <p className="font-serif text-base font-medium text-[#e8d4a0] tracking-[0.15em]">
+                        {displaySignature}
                       </p>
                       <div className="mt-1 h-px w-full bg-[#c9a227]/60" />
                     </motion.div>

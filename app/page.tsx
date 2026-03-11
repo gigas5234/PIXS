@@ -274,7 +274,7 @@ export default function HomePage() {
       addLog({ type: "error", message: msg, detail: err });
       setIsGenerating(false);
     }
-  }, [canGenerate, uploadedFile, selectedId, selected.title, uploadPreviewUrl, isGenerating, addLog]);
+  }, [canGenerate, uploadedFile, selectedId, selected.title, uploadPreviewUrl, isGenerating, addLog, signatureText]);
 
   const handleLoadingComplete = useCallback(() => {
     setApiComplete(false);
