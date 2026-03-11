@@ -1,0 +1,39 @@
+---
+description: PIXS product and landing implementation direction
+alwaysApply: true
+---
+
+# PIXS Direction Rule
+
+## Product intent
+
+- Build a premium AI pet art studio experience, not a casual filter app.
+- Prioritize first-impression impact on the landing page.
+- Guide users with theme-card UX instead of free-form prompt writing.
+
+## Brand system
+
+- Tone: premium, dark, classical-modern blend.
+- Colors: `#121212` background, `#E1C16E` accent.
+- Typography: serif headlines + sans-serif body.
+
+## Main themes
+
+- `The Royal Atelier`: Rembrandt/Vermeer/Van Gogh inspired studio-art mood.
+- `Cine-Matic Paw`: Marvel/Disney/cyberpunk inspired cinematic mood.
+
+## Engineering defaults
+
+- Frontend: Next.js App Router + Tailwind CSS.
+- Backend: FastAPI.
+- AI: Gemini 3 Flash Image API.
+- Keep landing sections modular and reusable.
+- Avoid unnecessary client components; prefer server components by default.
+
+## Landing must include
+
+- Hero with a strong value proposition and clear CTA.
+- Two-concept showcase cards.
+- Quality proof (`8k resolution`, `studio lighting`, `sharp focus`).
+- Three-step flow explanation (upload -> theme select -> generate).
+- Trust/FAQ section and final conversion CTA.
