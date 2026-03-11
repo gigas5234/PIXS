@@ -226,6 +226,20 @@ export default function HomePage() {
     addLog({ type: "request", message: `POST /api/generate (style: ${selectedId})` });
 
     try {
+      // 결과 페이지 재생성용 원본 이미지 저장
+      await new Promise<void>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = (reader.result as string)?.split(",")[1];
+          if (base64 && typeof window !== "undefined") {
+            sessionStorage.setItem("pixs:originalImageBase64", base64);
+            sessionStorage.setItem("pixs:originalImageMimeType", uploadedFile.type || "image/png");
+          }
+          resolve();
+        };
+        reader.readAsDataURL(uploadedFile);
+      });
+
       const formData = new FormData();
       formData.append("image", uploadedFile);
       formData.append("styleId", selectedId);

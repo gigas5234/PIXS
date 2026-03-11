@@ -1,13 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Share2, RotateCcw } from "lucide-react";
+import { Download, Share2, ImagePlus } from "lucide-react";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { RESULT_STYLES } from "@/lib/styles";
 
 type ResultViewProps = {
   styleId: string;
 };
+
+function base64ToFile(base64: string, mimeType: string, filename: string): File {
+  const byteChars = atob(base64);
+  const byteNumbers = new Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+  const blob = new Blob([new Uint8Array(byteNumbers)], { type: mimeType });
+  return new File([blob], filename, { type: mimeType });
+}
 
 export function ResultView({ styleId }: ResultViewProps) {
   const signatureFontStacks: Record<string, string> = {
@@ -27,6 +37,11 @@ export function ResultView({ styleId }: ResultViewProps) {
 
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerateProgress, setRegenerateProgress] = useState(0);
+  const [currentResultUrl, setCurrentResultUrl] = useState<string | null>(null);
+  const [currentStyleId, setCurrentStyleId] = useState(styleId);
+  const [currentStyleTitle, setCurrentStyleTitle] = useState<string>("");
 
   const [uploadPreviewUrl] = useState<string | null>(
     () => (typeof window !== "undefined" ? sessionStorage.getItem("pixs:uploadPreviewUrl") : null),
@@ -38,21 +53,102 @@ export function ResultView({ styleId }: ResultViewProps) {
     () => (typeof window !== "undefined" ? sessionStorage.getItem("pixs:signatureText") : null),
   );
   const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
-  const [styleTitle] = useState<string>(
-    () =>
-      (typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null) ?? "선택 스타일",
-  );
 
-  const baseImageUrl = resultImageUrlFromStorage ?? uploadPreviewUrl;
+  const baseImageUrl = currentResultUrl ?? resultImageUrlFromStorage ?? uploadPreviewUrl;
+  const styleTitle = currentStyleTitle || (typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null) ?? "선택 스타일";
   // 화면에 보여줄 이미지는 AI가 생성한 원본
   const displayImageUrl = baseImageUrl;
   // 다운로드/공유용 이미지는 서명이 합성된 버전이 있으면 그것을 사용
   const resultImageUrl = signedImageUrl ?? baseImageUrl;
 
   useEffect(() => {
+    setCurrentStyleId(styleId);
+    const title = RESULT_STYLES.find((s) => s.id === styleId)?.title ?? sessionStorage.getItem("pixs:selectedStyleTitle");
+    setCurrentStyleTitle(title ?? "");
+  }, [styleId]);
+
+  useEffect(() => {
     const t = window.setTimeout(() => setShowButtons(true), 800);
     return () => window.clearTimeout(t);
   }, []);
+
+  // 재생성 시 프로그레스 애니메이션
+  useEffect(() => {
+    if (!isRegenerating) {
+      setRegenerateProgress(0);
+      return;
+    }
+    const stepMs = 12000 / 95;
+    let current = 0;
+    const timer = window.setInterval(() => {
+      current += 1;
+      if (current >= 95) {
+        window.clearInterval(timer);
+        setRegenerateProgress(95);
+        return;
+      }
+      setRegenerateProgress(current);
+    }, stepMs);
+    return () => window.clearInterval(timer);
+  }, [isRegenerating]);
+
+  const handleResetToMain = useCallback(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("pixs:uploadPreviewUrl");
+      sessionStorage.removeItem("pixs:resultImageUrl");
+      sessionStorage.removeItem("pixs:selectedStyle");
+      sessionStorage.removeItem("pixs:selectedStyleTitle");
+      sessionStorage.removeItem("pixs:signatureText");
+      sessionStorage.removeItem("pixs:originalImageBase64");
+      sessionStorage.removeItem("pixs:originalImageMimeType");
+    }
+    router.push("/");
+  }, [router]);
+
+  const handleReGenerate = useCallback(async (newStyleId: string) => {
+    if (isRegenerating || newStyleId === currentStyleId) return;
+
+    const base64 = typeof window !== "undefined" ? sessionStorage.getItem("pixs:originalImageBase64") : null;
+    const mimeType = typeof window !== "undefined" ? sessionStorage.getItem("pixs:originalImageMimeType") ?? "image/png" : "image/png";
+    const sig = typeof window !== "undefined" ? sessionStorage.getItem("pixs:signatureText") ?? "" : "";
+
+    if (!base64) {
+      router.push("/");
+      return;
+    }
+
+    setIsRegenerating(true);
+    setRegenerateProgress(0);
+
+    try {
+      const file = base64ToFile(base64, mimeType, "original.png");
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("styleId", newStyleId);
+      formData.append("signatureText", sig);
+
+      const res = await fetch("/api/generate", { method: "POST", body: formData });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) throw new Error(data.error ?? "Generation failed");
+      if (!data.imageUrl) throw new Error("No image returned");
+
+      setRegenerateProgress(100);
+      setCurrentResultUrl(data.imageUrl);
+      setCurrentStyleId(newStyleId);
+      setCurrentStyleTitle(RESULT_STYLES.find((s) => s.id === newStyleId)?.title ?? newStyleId);
+      setSignedImageUrl(null);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("pixs:resultImageUrl", data.imageUrl);
+        sessionStorage.setItem("pixs:selectedStyle", newStyleId);
+        sessionStorage.setItem("pixs:selectedStyleTitle", RESULT_STYLES.find((s) => s.id === newStyleId)?.title ?? newStyleId);
+      }
+    } catch {
+      router.push("/");
+    } finally {
+      setIsRegenerating(false);
+    }
+  }, [isRegenerating, currentStyleId, router]);
 
   // Canvas 후처리로 서명 합성
   useEffect(() => {
@@ -107,7 +203,7 @@ export function ResultView({ styleId }: ResultViewProps) {
 
         const fontSize = Math.max(16, Math.floor(canvas.width * 0.035));
         const fontStack =
-          signatureFontStacks[styleId] ??
+          signatureFontStacks[currentStyleId] ??
           `"Cormorant Garamond", "Cormorant", "Playfair Display", "Times New Roman", serif`;
         ctx.save();
         ctx.font = `${fontSize}px ${fontStack}`;
@@ -158,13 +254,13 @@ export function ResultView({ styleId }: ResultViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [baseImageUrl, signatureText, styleId]);
+  }, [baseImageUrl, signatureText, currentStyleId]);
 
   const handleDownload = () => {
     if (!resultImageUrl) return;
     const a = document.createElement("a");
     a.href = resultImageUrl;
-    a.download = `pixs-masterpiece-${styleId}.png`;
+    a.download = `pixs-masterpiece-${currentStyleId}.png`;
     a.click();
   };
 
@@ -246,17 +342,17 @@ export function ResultView({ styleId }: ResultViewProps) {
                   style={{ borderRadius: "calc(1.5rem - 6px)" }}
                 />
 
-                {/* Artwork — mist clearing reveal (1:1 square) */}
+                {/* Artwork — 1:1 square */}
                 <div className="relative aspect-square overflow-hidden rounded-xl bg-black/60">
                   <AnimatePresence>
                   {displayImageUrl ? (
                       <motion.img
-                        key="artwork"
-                       src={displayImageUrl}
+                        key={currentStyleId + "-artwork"}
+                        src={displayImageUrl}
                         alt={`${styleTitle} 마스터피스`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -269,6 +365,20 @@ export function ResultView({ styleId }: ResultViewProps) {
                         <p className="text-[11px] tracking-[0.33em] text-white/35 uppercase">
                           API 연결 후 생성 이미지가 표시됩니다
                         </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* 재생성 중 로딩 오버레이 */}
+                  <AnimatePresence>
+                    {isRegenerating && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                      >
+                        <LoadingScreen progress={regenerateProgress} className="scale-90" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -293,7 +403,28 @@ export function ResultView({ styleId }: ResultViewProps) {
                 <p className="mt-4 text-center font-serif-display text-sm text-[#e8c4c9]">{styleTitle}</p>
               </motion.div>
 
-              {/* Action buttons — appear 2s after reveal */}
+              {/* 인라인 스타일 선택 — 가로 스크롤 */}
+              <div className="mt-6">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {RESULT_STYLES.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handleReGenerate(s.id)}
+                      disabled={isRegenerating || s.id === currentStyleId}
+                      className={`flex-none rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                        s.id === currentStyleId
+                          ? "border-[#800808]/80 bg-[#800808]/20 text-[#f0c6cd]"
+                          : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
+                      } ${isRegenerating ? "pointer-events-none opacity-50" : ""}`}
+                    >
+                      {s.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action buttons */}
               <AnimatePresence>
                 {showButtons && (
                   <motion.div
@@ -314,16 +445,6 @@ export function ResultView({ styleId }: ResultViewProps) {
                     </motion.button>
                     <motion.button
                       type="button"
-                      onClick={() => router.push("/")}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/8 px-6 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/12"
-                    >
-                      <RotateCcw size={18} />
-                      다른 스타일로 시도하기
-                    </motion.button>
-                    <motion.button
-                      type="button"
                       onClick={handleShare}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
@@ -335,6 +456,18 @@ export function ResultView({ styleId }: ResultViewProps) {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* 새로운 사진으로 시작하기 */}
+              <motion.button
+                type="button"
+                onClick={handleResetToMain}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mt-12 flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-transparent py-3 text-sm text-white/60 transition hover:bg-white/5 hover:text-white/80"
+              >
+                <ImagePlus size={18} />
+                새로운 사진으로 시작하기
+              </motion.button>
             </motion.section>
         </AnimatePresence>
       </div>
