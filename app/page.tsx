@@ -604,7 +604,7 @@ export default function HomePage() {
                 type="text"
                 value={signatureText}
                 onChange={(e) => setSignatureText(e.target.value)}
-                placeholder="작품에 새길 서명을 입력하세요 (예: Masterpiece by Namjoon)"
+                placeholder="작품에 새길 서명을 입력하세요 (예: Masterpiece by Picasso)"
                 className="w-full border-b border-white/20 bg-transparent px-0 pb-2 text-sm text-white placeholder:text-white/30 focus:border-[#b45d69] focus:outline-none"
               />
             </div>

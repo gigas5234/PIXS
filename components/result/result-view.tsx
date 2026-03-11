@@ -10,6 +10,21 @@ type ResultViewProps = {
 };
 
 export function ResultView({ styleId }: ResultViewProps) {
+  const signatureFontStacks: Record<string, string> = {
+    // Atelier
+    rembrandt: `"Cormorant Garamond", "Cormorant", "Times New Roman", serif`,
+    vermeer: `"Playfair Display", "Spectral", "Georgia", serif`,
+    "van-gogh": `"Great Vibes", "Dancing Script", "Brush Script MT", cursive`,
+    renaissance: `"Cinzel", "Cormorant", "Bodoni Moda", serif`,
+    picasso: `"Permanent Marker", "Rock Salt", "Kalam", cursive`,
+    // Cinematic
+    "marvel-hero": `"Oswald", "Bebas Neue", "League Spartan", sans-serif`,
+    "disney-live-action": `"Allura", "Parisienne", "Nanum Pen Script", cursive`,
+    cyberpunk: `"Orbitron", "Audiowide", "Rajdhani", sans-serif`,
+    western: `"Special Elite", "Fredericka the Great", "Courier New", monospace`,
+    "korean-minhwa": `"Nanum Myeongjo", "Song Myung", "Batang", serif`,
+  };
+
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false);
 
@@ -29,6 +44,9 @@ export function ResultView({ styleId }: ResultViewProps) {
   );
 
   const baseImageUrl = resultImageUrlFromStorage ?? uploadPreviewUrl;
+  // 화면에 보여줄 이미지는 AI가 생성한 원본
+  const displayImageUrl = baseImageUrl;
+  // 다운로드/공유용 이미지는 서명이 합성된 버전이 있으면 그것을 사용
   const resultImageUrl = signedImageUrl ?? baseImageUrl;
 
   useEffect(() => {
@@ -87,9 +105,12 @@ export function ResultView({ styleId }: ResultViewProps) {
         const color = avgLuma > 140 ? charcoal : gold;
 
         const fontSize = Math.max(16, Math.floor(canvas.width * 0.035));
+        const fontStack =
+          signatureFontStacks[styleId] ??
+          `"Cormorant Garamond", "Cormorant", "Playfair Display", "Times New Roman", serif`;
         ctx.save();
         ctx.globalAlpha = 0.7;
-        ctx.font = `${fontSize}px "Cormorant", "Playfair Display", "Times New Roman", serif`;
+        ctx.font = `${fontSize}px ${fontStack}`;
         ctx.textAlign = "right";
         ctx.textBaseline = "bottom";
         ctx.fillStyle = color;
@@ -98,6 +119,14 @@ export function ResultView({ styleId }: ResultViewProps) {
         const x = canvas.width - margin;
         const y = canvas.height - margin * 0.6;
         ctx.fillText(text, x, y);
+        // 밑줄 (언더라인) 추가로 각인된 서명 느낌 강화
+        const underlineOffset = Math.floor(fontSize * 0.15);
+        ctx.beginPath();
+        ctx.moveTo(x - ctx.measureText(text).width, y + underlineOffset);
+        ctx.lineTo(x, y + underlineOffset);
+        ctx.lineWidth = Math.max(1, Math.floor(fontSize * 0.06));
+        ctx.strokeStyle = color;
+        ctx.stroke();
         ctx.restore();
 
         const url = canvas.toDataURL("image/png");
@@ -197,7 +226,7 @@ export function ResultView({ styleId }: ResultViewProps) {
                     "0 0 0 1px rgba(128,8,8,0.4), 0 0 0 3px rgba(94,11,21,0.2), 0 0 60px rgba(128,8,8,0.25), 0 30px 90px rgba(0,0,0,0.8)",
                 }}
               >
-                {/* Gold inner accent */}
+              {/* Gold inner accent */}
                 <div
                   className="absolute inset-[6px] rounded-xl border border-[#c9a227]/25 pointer-events-none"
                   style={{ borderRadius: "calc(1.5rem - 6px)" }}
@@ -206,14 +235,14 @@ export function ResultView({ styleId }: ResultViewProps) {
                 {/* Artwork — mist clearing reveal (1:1 square) */}
                 <div className="relative aspect-square overflow-hidden rounded-xl bg-black/60">
                   <AnimatePresence>
-                    {resultImageUrl ? (
+                  {displayImageUrl ? (
                       <motion.img
                         key="artwork"
-                        src={resultImageUrl}
+                       src={displayImageUrl}
                         alt={`${styleTitle} 마스터피스`}
-                        initial={{ opacity: 0, filter: "blur(20px)" }}
-                        animate={{ opacity: 1, filter: "blur(0px)" }}
-                        transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -230,16 +259,20 @@ export function ResultView({ styleId }: ResultViewProps) {
                     )}
                   </AnimatePresence>
 
-                  {/* Ripple overlay (fades out) */}
-                  <motion.div
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: 0 }}
-                    transition={{ duration: 1.2, delay: 0.3 }}
-                    className="pointer-events-none absolute inset-0"
-                    style={{
-                      background: "radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.4) 100%)",
-                    }}
-                  />
+                  {/* 서명 애니메이션 오버레이 (우측 하단) */}
+                  {signatureText && signatureText.trim().length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 1] }}
+                      transition={{ duration: 1.6, delay: 0.8, ease: "easeInOut" }}
+                      className="pointer-events-none absolute bottom-3 right-4 text-right"
+                    >
+                      <p className="font-serif text-[11px] text-white/85 tracking-[0.18em]">
+                        {signatureText}
+                      </p>
+                      <div className="mt-0.5 h-px w-full bg-white/70" />
+                    </motion.div>
+                  )}
                 </div>
 
                 <p className="mt-4 text-center font-serif-display text-sm text-[#e8c4c9]">{styleTitle}</p>
