@@ -58,16 +58,26 @@ const STYLES: StyleDef[] = [
   {
     id: "picasso",
     num: "04",
-    title: "Renaissance",
-    subtitle: "왕실의 품격, 정밀한 구도",
+    title: "Picasso",
+    subtitle: "입체주의·기하학적 해체",
     concept: "atelier",
     imageSrc: null, // TODO: "/gallery/renaissance_sample.png"
     placeholderGradient: "radial-gradient(ellipse at 55% 22%, #2d1c10 0%, #180e08 50%, #0f0b0a 100%)",
     note: "대상을 해체하고 재조합하는 입체주의적 시선을 담아냅니다. 반려동물의 고유한 특징을 대담한 선과 기하학적 면으로 표현하여, 세상 어디에도 없는 독창적인 현대 미술 작품으로 승화시킵니다.",
   },
   {
-    id: "marvel-hero",
+    id: "korean-minhwa",
     num: "05",
+    title: "Korean Minhwa",
+    subtitle: "한지·오방색의 민화 정신",
+    concept: "atelier",
+    imageSrc: null,
+    placeholderGradient: "radial-gradient(ellipse at 50% 40%, #3d2a1a 0%, #2a1a0f 50%, #1a1208 100%)",
+    note: "조선 시대 민화의 우아한 먹선과 오방색의 정수를 담아냅니다. 한지 위에 펼쳐지는 반려동물의 호원 자세와 정갈한 붓 터치는, 세대를 넘어 전해오는 한국민화의 따뜻하고 해학적인 정신을 담아냅니다.",
+  },
+  {
+    id: "marvel-hero",
+    num: "06",
     title: "Heroic",
     subtitle: "강렬한 히어로 조명의 중심",
     concept: "cinematic",
@@ -77,7 +87,7 @@ const STYLES: StyleDef[] = [
   },
   {
     id: "disney-live-action",
-    num: "06",
+    num: "07",
     title: "Fairytale",
     subtitle: "따뜻한 시네마틱 실사 감성",
     concept: "cinematic",
@@ -87,7 +97,7 @@ const STYLES: StyleDef[] = [
   },
   {
     id: "cyberpunk",
-    num: "07",
+    num: "08",
     title: "Cyberpunk",
     subtitle: "네온 대비와 미래 도시 무드",
     concept: "cinematic",
@@ -97,7 +107,7 @@ const STYLES: StyleDef[] = [
   },
   {
     id: "western",
-    num: "08",
+    num: "09",
     title: "Western Noir",
     subtitle: "드라마틱 역광의 대서사",
     concept: "cinematic",
@@ -124,7 +134,7 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
       whileHover={{ y: -5 }}
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
-      className="relative w-[92px] flex-none rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 text-left transition-colors duration-300 hover:border-white/14 hover:bg-white/[0.05]"
+      className="relative h-[120px] w-[92px] flex-none rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 text-left transition-colors duration-300 hover:border-white/14 hover:bg-white/[0.05]"
     >
       {/* Shared layout — slides smoothly between selected cards (Apple-style) */}
       {isSelected && (
@@ -437,7 +447,7 @@ export default function HomePage() {
                   The Classic Suite · I
                 </p>
                 <div className="flex gap-2.5">
-                  {STYLES.slice(0, 4).map((style) => (
+                  {STYLES.slice(0, 5).map((style) => (
                     <DockCard
                       key={style.id}
                       style={style}
@@ -459,7 +469,7 @@ export default function HomePage() {
                   The Modern Gallery · II
                 </p>
                 <div className="flex gap-2.5">
-                  {STYLES.slice(4).map((style) => (
+                  {STYLES.slice(5).map((style) => (
                     <DockCard
                       key={style.id}
                       style={style}

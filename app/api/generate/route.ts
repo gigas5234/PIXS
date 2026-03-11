@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
   try {
     debug.push({ step: "parse_form" });
     const formData = await request.formData();
+    // 참조 이미지 고정: 'image' 키의 파일만 사용 (파일명과 무관하게 첫 번째 입력으로 할당)
     const image = formData.get("image") as File | null;
     const styleId = (formData.get("styleId") as string) ?? "";
 
@@ -79,14 +80,19 @@ export async function POST(request: NextRequest) {
     }
 
     debug.push({ step: "load_prompt", detail: styleId });
-    const prompt = await loadStylePrompt(styleId);
-    if (!prompt) {
+    const stylePrompt = await loadStylePrompt(styleId);
+    if (!stylePrompt) {
       debug.push({ step: "load_prompt", error: `Unknown style: ${styleId}` });
       return NextResponse.json(
         { error: `Unknown style: ${styleId}`, debug },
         { status: 400 },
       );
     }
+
+    // Subject Identity Anchoring: pre-pend 강제 주입
+    const identityAnchor =
+      "Strictly maintain the specific breeds, fur patterns, facial structure, and unique identity of the pet shown in the uploaded image [1]. Do not create a generic animal; recreate THIS specific pet. ";
+    const prompt = identityAnchor + stylePrompt;
 
     const credentialsPath = resolveCredentialsPath(debug);
     const projectId = process.env.GOOGLE_CLOUD_PROJECT ?? "pixs-489916";
@@ -118,10 +124,15 @@ export async function POST(request: NextRequest) {
       location,
     });
 
+    // 참조 이미지 고정: 업로드된 이미지를 항상 첫 번째 입력(input_file_0 / referenceId 1)로 할당
     const subjectRef = new SubjectReferenceImage();
     subjectRef.referenceImage = { imageBytes: base64, mimeType };
     subjectRef.referenceId = 1;
-    subjectRef.config = { subjectType: SubjectReferenceType.SUBJECT_TYPE_ANIMAL };
+    subjectRef.config = {
+      subjectType: SubjectReferenceType.SUBJECT_TYPE_ANIMAL,
+      subjectDescription:
+        "The specific pet with its unique breed, fur pattern, facial structure, and identity. Recreate this exact animal, not a generic one.",
+    };
 
     debug.push({
       step: "call_edit_image",
@@ -134,6 +145,8 @@ export async function POST(request: NextRequest) {
       config: {
         numberOfImages: 1,
         aspectRatio: "1:1",
+        // Subject/Identity 우선: guidanceScale 상향으로 프롬프트(정체성 강조) 준수 강화
+        guidanceScale: 100,
       },
     });
 
