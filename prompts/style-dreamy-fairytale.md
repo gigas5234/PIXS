@@ -9,6 +9,7 @@
 
 2. STYLE ADAPTATION:
 - The subject wears a miniature, handcrafted silver filigree crown and a lavender silk bow.
+- Regardless of the original pose in [input_file_0], reinterpret the subject into a gentle, storybook seated pose, centered in frame as if posing for an enchanted royal portrait.
 - Background is an enchanted twilight forest with floating golden dust and glowing spores.
 
 3. TEXTURE & LIGHTING:

@@ -9,6 +9,7 @@
 
 2. STYLE ADAPTATION:
 - The subject wears a weathered leather bandana and sits in a lonely frontier setting.
+- Regardless of the original pose in [input_file_0], reinterpret the subject into a grounded, full-body seated pose at the center of frame, like a lone gunslinger waiting in silence.
 - Stark shadow geometry and atmospheric dust-heavy air.
 
 3. TEXTURE & LIGHTING:

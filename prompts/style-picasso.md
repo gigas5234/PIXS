@@ -10,6 +10,7 @@
 2. STYLE ADAPTATION:
 - Use fragmented perspectives and overlapping flat shapes to redefine the subject’s form.
 - Use a bold, contrasting color palette with thick black outlines.
+- Regardless of the original pose in [input_file_0], build the abstraction around a clearly readable, centered seated portrait silhouette so the pet feels like it is calmly posing for an avant-garde studio painting.
 
 3. TEXTURE & LIGHTING:
 - A mix of painterly textures and flat color planes. 

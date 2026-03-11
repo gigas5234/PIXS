@@ -36,10 +36,10 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
       transition={{ duration: 0.5 }}
       className={`mx-auto flex flex-col items-center ${className}`}
     >
-      {/* 중앙 PIXS 로고 */}
+      {/* 중앙 PIXS LOADING 로고 */}
       <div className="relative flex items-center justify-center">
-        <span className="font-serif-display text-3xl font-bold tracking-[0.5em] text-white/90">
-          PIXS
+        <span className="font-serif-display text-2xl font-semibold tracking-[0.55em] text-white/80">
+          PIXS LOADING
         </span>
         {/* 로고 내부 Gradient Sweep */}
         <motion.div
@@ -56,7 +56,7 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
           transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
         >
           <div
-            className="h-8 w-full"
+            className="h-9 w-full"
             style={{
               backgroundImage: `linear-gradient(120deg, transparent 0%, ${CRIMSON_SOFT} 25%, #f0cad0 50%, ${CRIMSON_SOFT} 75%, transparent 100%)`,
               backgroundSize: "220% 100%",
@@ -66,9 +66,9 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
         </motion.div>
       </div>
 
-      {/* PIXS 로딩 상태 문구 */}
-      <p className="mt-3 text-[10px] uppercase tracking-[0.32em] text-[#b45d69]">
-        PIXS Loading
+      {/* 보조 상태 문구 (아주 작게) */}
+      <p className="mt-2 text-[9px] uppercase tracking-[0.28em] text-[#b45d69]/80">
+        The Artist&apos;s Work
       </p>
 
       {/* 섬세한 Crimson 프로그레스 라인 */}

@@ -9,7 +9,8 @@
 
 2. STYLE ADAPTATION:
 - The subject wears an ornate velvet mantle and an intricate, stiff lace ruff collar with gold-thread accents.
-- Background is a dark, textured studio wall with a subtle painterly patina.
+- Regardless of the original pose in [input_file_0], reinterpret the body into a formal, symmetrical seated pose on an implied throne or pedestal, facing the viewer with regal composure.
+- Background is a dark, textured studio wall with a subtle painterly patina and no modern objects.
 
 3. TEXTURE & LIGHTING:
 - Noble, soft-focus painterly lighting. 

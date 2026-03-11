@@ -9,6 +9,7 @@
 
 2. STYLE ADAPTATION:
 - Use rhythmic, swirling directional brushstrokes to build the subject’s form.
+- Regardless of the original pose in [input_file_0], reinterpret the subject into a stable, centered seated pose, with the full body visible and the head gently tilted toward the viewer.
 - The background is a turbulent, starry midnight sky filled with energetic energy.
 
 3. TEXTURE & LIGHTING:

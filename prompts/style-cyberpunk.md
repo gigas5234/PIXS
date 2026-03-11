@@ -9,6 +9,7 @@
 
 2. STYLE ADAPTATION:
 - Feature subtle holographic HUD elements and a glowing fiber-optic collar.
+- Regardless of the original pose in [input_file_0], reinterpret the subject into a composed, full-body seated pose on a low chrome platform, facing the viewer like a portrait in a futuristic studio.
 - The set is a rainy, chrome-floored Neo-Tokyo studio with volumetric haze.
 
 3. TEXTURE & LIGHTING:

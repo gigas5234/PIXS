@@ -14,7 +14,9 @@ async function detectSpeciesFromImage(
 ): Promise<string> {
   try {
     const res = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      // Vertex AI Gemini 2.0 Flash Experimental (Nano Banana 근접) - Vertex 모델 ID
+      // Gemini API의 `gemini-2.0-flash-exp`에 해당하는 Vertex 버전은 `gemini-2.0-flash-001`
+      model: "gemini-2.0-flash-001",
       contents: [
         { inlineData: { data: base64, mimeType } },
         { text: "What is the primary animal in this image? Reply with exactly one word: Cat or Dog. If unclear or neither, reply: pet." },

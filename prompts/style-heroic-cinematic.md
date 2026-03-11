@@ -9,7 +9,7 @@
 
 2. STYLE ADAPTATION:
 - The subject wears a custom-fitted, high-tech futuristic tactical harness with layered titanium plates and a glowing cyan energy core.
-- Seated in a confident, upright 'hero' pose on a dark metallic platform.
+- Regardless of the original pose in [input_file_0], reinterpret the subject into a confident, full-body upright 'hero' seated pose on a dark metallic platform, centered in frame.
 
 3. TEXTURE & LIGHTING:
 - Intense cinematic lighting: cool blue key light and a warm red rim light defining the silhouette.

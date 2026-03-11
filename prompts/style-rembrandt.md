@@ -10,7 +10,8 @@
 2. STYLE ADAPTATION:
 - Apply intense Chiaroscuro lighting with a classic Rembrandt triangle on the shadowed cheek. 
 - The subject wears a regal, deep crimson velvet cloak with intricate gold embroidery and a delicate lace ruffle collar that fits its specific anatomy.
-- Background is a seamless, absolute dark studio void.
+- Regardless of the original pose in [input_file_0], reinterpret the body into a dignified, full-body seated portrait pose facing the viewer, with paws or front legs neatly composed.
+- Background is a seamless, absolute dark studio void with no props or distractions.
 
 3. TEXTURE & LIGHTING:
 - Feature heavy, tactile impasto oil paint brushstrokes. 

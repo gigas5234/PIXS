@@ -9,7 +9,8 @@
 
 2. STYLE ADAPTATION:
 - The subject wears a signature ultramarine blue headscarf and a single, luminous pearl earring accent.
-- Composition is calm and centered near a soft window-side light source.
+- Regardless of the original pose in [input_file_0], reinterpret the subject into a calm, upright seated portrait pose, front-facing or gentle three-quarter view, centered in frame.
+- Composition is calm and centered near a soft window-side light source with a simple, uncluttered background.
 
 3. TEXTURE & LIGHTING:
 - Soft, painterly gradients with delicate textile details.
