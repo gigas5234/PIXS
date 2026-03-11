@@ -20,20 +20,8 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
 }
 
 export function ResultView({ styleId }: ResultViewProps) {
-  const signatureFontStacks: Record<string, string> = {
-    // Atelier
-    rembrandt: `"Cormorant Garamond", "Cormorant", "Times New Roman", serif`,
-    vermeer: `"Playfair Display", "Spectral", "Georgia", serif`,
-    "van-gogh": `"Great Vibes", "Dancing Script", "Brush Script MT", cursive`,
-    renaissance: `"Cinzel", "Cormorant", "Bodoni Moda", serif`,
-    picasso: `"Permanent Marker", "Rock Salt", "Kalam", cursive`,
-    // Cinematic
-    "marvel-hero": `"Oswald", "Bebas Neue", "League Spartan", sans-serif`,
-    "disney-live-action": `"Allura", "Parisienne", "Nanum Pen Script", cursive`,
-    cyberpunk: `"Orbitron", "Audiowide", "Rajdhani", sans-serif`,
-    western: `"Special Elite", "Fredericka the Great", "Courier New", monospace`,
-    "korean-minhwa": `"Nanum Myeongjo", "Song Myung", "Batang", serif`,
-  };
+  // 흘려쓰는 필기체 스타일 — 모든 스타일 공통 (날려쓰기 느낌)
+  const signatureFontStack = `"Dancing Script", "Great Vibes", "Nanum Pen Script", "Brush Script MT", "Segoe Script", "Apple Chancery", cursive`;
 
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false);
@@ -214,11 +202,8 @@ export function ResultView({ styleId }: ResultViewProps) {
         const charcoal = "#111111";
         const color = avgLuma > 140 ? charcoal : gold;
 
-        const fontSize = Math.max(24, Math.floor(canvas.width * 0.048));
-        const fontStack =
-          (signatureFontStacks[currentStyleId] ??
-            `"Cormorant Garamond", "Cormorant", "Playfair Display", "Times New Roman", serif`) +
-          ', "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+        const fontSize = Math.max(26, Math.floor(canvas.width * 0.05));
+        const fontStack = `${signatureFontStack}, "Noto Sans KR", "Malgun Gothic", sans-serif`;
         ctx.save();
         ctx.font = `${fontSize}px ${fontStack}`;
         const text = signatureText;
@@ -226,14 +211,14 @@ export function ResultView({ styleId }: ResultViewProps) {
         const x = canvas.width - margin;
         const y = canvas.height - margin * 0.6;
 
-        // 서명 배경: 확실히 보이도록 불투명도 높임
-        const padH = Math.floor(fontSize * 0.6);
-        const padV = Math.floor(fontSize * 0.5);
+        // 흘려쓰는 서명 — 얇은 반투명 배경만 (박스 느낌 최소화)
+        const padH = Math.floor(fontSize * 0.4);
+        const padV = Math.floor(fontSize * 0.35);
         const bgX = x - textWidth - padH * 2;
         const bgY = y - fontSize - padV;
         const bgW = textWidth + padH * 2;
-        const bgH = fontSize + padV * 2 + Math.floor(fontSize * 0.2);
-        ctx.fillStyle = avgLuma > 140 ? "rgba(0,0,0,0.78)" : "rgba(20,12,8,0.88)";
+        const bgH = fontSize + padV * 2;
+        ctx.fillStyle = avgLuma > 140 ? "rgba(0,0,0,0.5)" : "rgba(20,12,8,0.55)";
         ctx.beginPath();
         ctx.rect(bgX, bgY, bgW, bgH);
         ctx.fill();
@@ -243,13 +228,14 @@ export function ResultView({ styleId }: ResultViewProps) {
         ctx.textBaseline = "bottom";
         ctx.fillStyle = color;
         ctx.fillText(text, x, y);
-        // 밑줄 (언더라인) 추가로 각인된 서명 느낌 강화
-        const underlineOffset = Math.floor(fontSize * 0.15);
+        // 가볍게 흘려쓴 밑줄
+        const underlineOffset = Math.floor(fontSize * 0.12);
         ctx.beginPath();
-        ctx.moveTo(x - textWidth, y + underlineOffset);
+        ctx.moveTo(x - textWidth * 0.3, y + underlineOffset);
         ctx.lineTo(x, y + underlineOffset);
-        ctx.lineWidth = Math.max(1, Math.floor(fontSize * 0.06));
+        ctx.lineWidth = Math.max(1, Math.floor(fontSize * 0.04));
         ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.85;
         ctx.stroke();
         ctx.restore();
 
@@ -397,19 +383,23 @@ export function ResultView({ styleId }: ResultViewProps) {
                     )}
                   </AnimatePresence>
 
-                  {/* 서명 오버레이: 서명이 있으면 항상 표시 (Canvas 합성 실패/대기 시에도 확실히 보이도록) */}
-                  {displaySignature.trim().length > 0 && (
+                  {/* 서명 오버레이: Canvas 합성 전/실패 시에만 표시 (겹침 방지 — 합성 완료 시 이미지에만 표시) */}
+                  {displaySignature.trim().length > 0 && !signedImageUrl && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.5 }}
-                      className="pointer-events-none absolute bottom-4 right-5 z-10 rounded-md px-4 py-2.5 text-right shadow-xl"
-                      style={{ background: "rgba(20,12,8,0.95)", border: "2px solid rgba(201,162,39,0.6)" }}
+                      className="pointer-events-none absolute bottom-4 right-5 z-10 rounded-md px-4 py-2 text-right"
+                      style={{
+                        background: "rgba(20,12,8,0.7)",
+                        border: "1px solid rgba(201,162,39,0.4)",
+                        fontFamily: "var(--font-signature), var(--font-signature-kr), 'Dancing Script', 'Nanum Pen Script', cursive",
+                      }}
                     >
-                      <p className="font-serif text-base font-medium text-[#e8d4a0] tracking-[0.15em]">
+                      <p className="text-lg text-[#e8d4a0]">
                         {displaySignature}
                       </p>
-                      <div className="mt-1 h-px w-full bg-[#c9a227]/60" />
+                      <div className="mt-0.5 h-px w-3/4 ml-auto bg-[#c9a227]/50" />
                     </motion.div>
                   )}
                 </div>
