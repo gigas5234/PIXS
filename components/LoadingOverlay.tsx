@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { LoadingScreen } from "./LoadingScreen";
 
-const PROGRESS_DURATION_MS = 7000;
+const PROGRESS_DURATION_MS = 12000;
 const PROGRESS_MAX = 95;
 
 type LoadingOverlayProps = {
@@ -13,7 +13,7 @@ type LoadingOverlayProps = {
   onComplete: () => void;
 };
 
-/** 0→95% (7초), API 완료 시 100%로 완성 후 onComplete */
+/** 0→95% (12초), API 완료 시 100%로 완성 후 onComplete */
 export function LoadingOverlay({ isVisible, apiComplete, onComplete }: LoadingOverlayProps) {
   const [progress, setProgress] = useState(0);
   const hasCalledComplete = useRef(false);

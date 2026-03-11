@@ -1,8 +1,24 @@
-# style-korean-minhwa
+# style-korean-minhwa (Universal Identity Version)
 
 ## Prompt
-"A master-level, authentic Korean Folk Art (Minhwa) portrait of the subject pet from the uploaded image [input_file_0], presented as a dignified and whimsical Joseon-era masterpiece. Strictly exclude all western artist's tools, easels, modern studio equipment, and oil painting textures. The background is a complete, absolute, seamless aged mulberry paper (Hanji) void with a subtle, antique patina, extending indefinitely.
+"A master-level, authentic Korean Folk Art (Minhwa) portrait.
 
-All attention is focused on the subject pet, seated in a formal, elegant upright 'Hogwon' (Royal Guardian) pose, looking directly and confidently at the viewer with its natural eye color and unique facial features preserved in sharp focus. The pet's form is defined by the elegant, rhythmic ink-and-wash lines characteristic of 18th-century Korean court paintings. It wears a decorative, traditional silk 'Gwanbok' (official robe) collar with intricate embroidered patterns of cranes and clouds, matching the pet's specific anatomy.
+1. SUBJECT IDENTITY (Multimodal Species Awareness):
+- When referencing [input_file_0], automatically analyze the image to define the exact species and key physical features—no additional text input required. Capture the unique facial anatomy and markings of this specific individual.
+- Whether it is a bird, a reptile, or a mammal, preserve its specific soul and 'look' with 100% fidelity.
+- Do not default to common animals; capture THIS specific individual.
 
-The lighting is soft, warm, and flat, consistent with traditional oriental aesthetics, yet it highlights the specific fur patterns and characteristics of the subject pet from [input_file_0]. The texture is highly defined by the visible, fibrous grain of hand-pressed Hanji paper and delicate, repetitive ink brush-strokes that emphasize the pet's soulful presence. The entire image has the tactile, historic quality of a national treasure preserved on a weathered paper scroll."
+2. STYLE ADAPTATION:
+- Render the subject using the elegant, rhythmic ink-and-wash lines of the Joseon dynasty on aged Hanji paper.
+- Place the subject in a dignified, traditional 'Hogwon' (Guardian) pose that fits its specific body structure.
+- Integrate subtle traditional motifs (pine, clouds) that complement the subject's form.
+- Strictly exclude all western artist's tools, easels, modern studio equipment, and oil painting textures.
+- The background is a complete, absolute, seamless aged mulberry paper (Hanji) void with a subtle, antique patina, extending indefinitely.
+
+3. TEXTURE & LIGHTING:
+- Use muted 'Obangsaek' pigments.
+- Highlight the subject's features through delicate, repetitive ink brush-strokes that feel like they are rising from the fibrous Hanji paper.
+- The final masterpiece must feel like a centuries-old national treasure, celebrating the unique 'new birth' of this specific creature."
+
+## Birth Narrative
+When the result is displayed, show a one-line summary of how this animal was reborn with artistic characteristics—aligned with the main copy: "기록이 아닌, 경이로운 탄생" (Not a record, but a wondrous birth).

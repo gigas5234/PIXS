@@ -19,6 +19,8 @@ type LoadingScreenProps = {
   className?: string;
 };
 
+const CANVAS_SIZE = 320;
+
 export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) {
   const phrase = getPhraseForProgress(progress);
 
@@ -28,127 +30,108 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className={`mx-auto w-full max-w-2xl ${className}`}
+      className={`mx-auto max-w-full ${className}`}
+      style={{ width: CANVAS_SIZE }}
     >
-      <p className="mb-6 text-center text-[10px] tracking-[0.32em] text-[#b45d69] uppercase">
+      {/* PIXS 로고 — 상단, 은은하게 깜빡임 */}
+      <motion.div
+        animate={{ opacity: [0.06, 0.14, 0.06] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        className="mb-6 text-center"
+      >
+        <span
+          className="font-serif-display text-2xl font-bold tracking-[0.4em] text-white"
+          aria-hidden
+        >
+          PIXS
+        </span>
+      </motion.div>
+
+      <p className="mb-4 text-center text-[10px] tracking-[0.32em] text-[#b45d69] uppercase">
         The Artist&apos;s Work
       </p>
 
-      {/* Canvas container — appears first */}
+      {/* 캔버스 — 고정 크기, 붓터치 느낌 */}
+      <div
+        className="relative mx-auto overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a]"
+        style={{
+          width: CANVAS_SIZE,
+          height: CANVAS_SIZE,
+          boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 20px 80px rgba(0,0,0,0.8)",
+        }}
+      >
+        {/* 붓터치 효과 — 좌→우로 그려지는 느낌 */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* 진행률에 따라 채워지는 붓자국들 (세로 스트로크) */}
+          {Array.from({ length: 12 }).map((_, i) => {
+            const strokeProgress = (i / 12) * 100;
+            const visible = progress >= strokeProgress;
+            return (
+              <motion.div
+                key={i}
+                className="absolute top-0 bottom-0 w-2 rounded-full"
+                style={{
+                  left: `${(i / 12) * 100}%`,
+                  transformOrigin: "left center",
+                  background: "linear-gradient(180deg, transparent 0%, rgba(128,8,8,0.25) 20%, rgba(160,48,64,0.5) 50%, rgba(128,8,8,0.25) 80%, transparent 100%)",
+                  boxShadow: "0 0 6px rgba(128,8,8,0.2)",
+                }}
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{
+                  scaleX: visible ? 1 : 0,
+                  opacity: visible ? 0.9 : 0,
+                }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+              />
+            );
+          })}
+          {/* 붓끝이 움직이는 커서 */}
+          <motion.div
+            className="absolute top-0 bottom-0 w-1.5 rounded-full"
+            style={{
+              background: "linear-gradient(180deg, transparent, rgba(180,60,80,0.6), transparent)",
+              boxShadow: "0 0 12px rgba(128,8,8,0.4)",
+            }}
+            animate={{ left: `${progress}%` }}
+            transition={{ duration: 0.2 }}
+          />
+        </div>
+      </div>
+
+      {/* 텍스트 + 프로그레스 바 — 붓터치 스타일 */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="relative mx-auto w-full max-w-[min(50vw,420px)]"
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="mt-6"
+        style={{ width: CANVAS_SIZE }}
       >
-        {/* PIXS 로고 워터마크 — 캔버스 뒤 배경, 은은하게 */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="pointer-events-none absolute inset-0 flex items-center justify-center"
-          style={{ zIndex: 0 }}
-        >
-          <span
-            className="font-serif-display text-[clamp(4rem,15vw,8rem)] font-bold tracking-[0.4em] text-white/[0.04]"
-            aria-hidden
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={phrase}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.4 }}
+            className="mb-4 text-center text-sm text-white/85"
           >
-            PIXS
-          </span>
-        </motion.div>
+            {phrase}
+          </motion.p>
+        </AnimatePresence>
 
-        {/* Empty canvas with smoke + 그려지는 효과 */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          className="relative aspect-square w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a]"
-          style={{
-            boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 20px 80px rgba(0,0,0,0.8)",
-            zIndex: 1,
-          }}
-        >
-          {/* Smoking blur — rising mist (연기 효과 유지) */}
-          <div className="absolute inset-0 overflow-hidden">
-            <motion.div
-              animate={{
-                backgroundPosition: ["0% 100%", "0% 0%"],
-                opacity: [0.5, 1, 0.5],
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `radial-gradient(ellipse 80% 60% at 50% 80%, rgba(180,80,95,0.35) 0%, transparent 50%),
-                  radial-gradient(ellipse 60% 40% at 50% 70%, rgba(140,50,65,0.3) 0%, transparent 45%)`,
-                backgroundSize: "100% 100%",
-              }}
-            />
-            <motion.div
-              animate={{
-                opacity: [0.2, 0.45, 0.2],
-                filter: ["blur(12px)", "blur(18px)", "blur(12px)"],
-              }}
-              transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0 bg-gradient-to-t from-[#1a0c10] via-transparent to-transparent"
-            />
-          </div>
-
-          {/* 그려지는 듯한 효과 — 확실하게 보이도록 강화 */}
+        {/* 프로그레스 바 — 붓터치 느낌 (거친 테두리) */}
+        <div className="h-2 w-full overflow-hidden rounded-sm bg-[#1a0a0c] border border-white/[0.06]">
           <motion.div
-            animate={{
-              opacity: [0.08, 0.25, 0.08],
-              scale: [0.98, 1.02, 0.98],
-            }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-[15%] rounded-full"
+            className="h-full bg-gradient-to-r from-[#800808] via-[#a03040] to-[#800808]"
             style={{
-              background: "radial-gradient(ellipse 70% 70% at 50% 50%, rgba(200,100,110,0.4) 0%, transparent 70%)",
-              boxShadow: "inset 0 0 60px rgba(128,8,8,0.15)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)",
             }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.25 }}
           />
-          <motion.div
-            animate={{
-              opacity: [0.03, 0.15, 0.03],
-              x: ["-100%", "100%"],
-            }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-            style={{ width: "60%" }}
-          />
-        </motion.div>
-
-        {/* 텍스트 + 프로그레스 바 — 0.5초 뒤 페이드인, 캔버스 너비와 동일 */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-8 w-full max-w-[min(50vw,420px)]"
-        >
-          {/* 문구: 프로그레스 바 바로 위 중앙 고정 */}
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={phrase}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.4 }}
-              className="mb-4 text-center text-sm text-white/85 sm:text-base"
-            >
-              {phrase}
-            </motion.p>
-          </AnimatePresence>
-
-          {/* 프로그레스 바 — 캔버스 너비와 동일 */}
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-[#800808]/70 to-[#a03040]"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
-          <p className="mt-2 text-center font-mono text-[11px] text-white/35">{progress}%</p>
-        </motion.div>
+        </div>
+        <p className="mt-2 text-center font-mono text-[11px] text-white/35">{progress}%</p>
       </motion.div>
     </motion.section>
   );
