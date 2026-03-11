@@ -44,16 +44,18 @@ export function ResultView({ styleId }: ResultViewProps) {
   const [currentStyleTitle, setCurrentStyleTitle] = useState<string>("");
   const [selectedStyleId, setSelectedStyleId] = useState(styleId);
 
-  const [uploadPreviewUrl] = useState<string | null>(
-    () => (typeof window !== "undefined" ? sessionStorage.getItem("pixs:uploadPreviewUrl") : null),
-  );
-  const [resultImageUrlFromStorage] = useState<string | null>(
-    () => (typeof window !== "undefined" ? sessionStorage.getItem("pixs:resultImageUrl") : null),
-  );
-  const [signatureText] = useState<string | null>(
-    () => (typeof window !== "undefined" ? sessionStorage.getItem("pixs:signatureText") : null),
-  );
+  const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
+  const [resultImageUrlFromStorage, setResultImageUrlFromStorage] = useState<string | null>(null);
+  const [signatureText, setSignatureText] = useState<string | null>(null);
   const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
+
+  // sessionStorage는 클라이언트에서만 유효 — useEffect로 마운트 후 로드 (SSR hydration 시 null 방지)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setUploadPreviewUrl(sessionStorage.getItem("pixs:uploadPreviewUrl"));
+    setResultImageUrlFromStorage(sessionStorage.getItem("pixs:resultImageUrl"));
+    setSignatureText(sessionStorage.getItem("pixs:signatureText"));
+  }, []);
 
   const baseImageUrl = currentResultUrl ?? resultImageUrlFromStorage ?? uploadPreviewUrl;
   const storedStyleTitle = typeof window !== "undefined" ? sessionStorage.getItem("pixs:selectedStyleTitle") : null;
@@ -206,8 +208,9 @@ export function ResultView({ styleId }: ResultViewProps) {
 
         const fontSize = Math.max(24, Math.floor(canvas.width * 0.048));
         const fontStack =
-          signatureFontStacks[currentStyleId] ??
-          `"Cormorant Garamond", "Cormorant", "Playfair Display", "Times New Roman", serif`;
+          (signatureFontStacks[currentStyleId] ??
+            `"Cormorant Garamond", "Cormorant", "Playfair Display", "Times New Roman", serif`) +
+          ', "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
         ctx.save();
         ctx.font = `${fontSize}px ${fontStack}`;
         const text = signatureText;
@@ -386,8 +389,8 @@ export function ResultView({ styleId }: ResultViewProps) {
                     )}
                   </AnimatePresence>
 
-                  {/* 서명 오버레이: Canvas 합성 전 로딩 중에만 표시 (합성 완료 시 이미지에 포함됨) */}
-                  {signatureText && signatureText.trim().length > 0 && !signedImageUrl && (
+                  {/* 서명 오버레이: 서명이 있으면 항상 표시 (Canvas 합성 실패/대기 시에도 확실히 보이도록) */}
+                  {signatureText && signatureText.trim().length > 0 && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
