@@ -47,6 +47,10 @@ function resolveCredentialsPath(debug: { step?: string; detail?: unknown }[]): s
   return null;
 }
 
+const REFERENCE_ID = 1 as const;
+const MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+
 /**
  * POST /api/generate
  *
@@ -67,7 +71,6 @@ export async function POST(request: NextRequest) {
   try {
     debug.push({ step: "parse_form" });
     const formData = await request.formData();
-    // 참조 이미지 고정: 'image' 키의 파일만 사용 (파일명과 무관하게 첫 번째 입력으로 할당)
     const image = formData.get("image") as File | null;
     const styleId = (formData.get("styleId") as string) ?? "";
 
@@ -78,6 +81,33 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    // 1. 업로드 파일 검증: 파일 타입 및 크기
+    const mimeType = image.type || "image/png";
+    if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+      debug.push({ step: "validate", error: `Invalid mime type: ${mimeType}` });
+      return NextResponse.json(
+        { error: `Unsupported image type. Use PNG, JPEG, or WebP.`, debug },
+        { status: 400 },
+      );
+    }
+    const arrayBuffer = await image.arrayBuffer();
+    const imageSize = arrayBuffer.byteLength;
+    if (imageSize === 0) {
+      debug.push({ step: "validate", error: "Empty image file" });
+      return NextResponse.json(
+        { error: "Image file is empty.", debug },
+        { status: 400 },
+      );
+    }
+    if (imageSize > MAX_IMAGE_SIZE_BYTES) {
+      debug.push({ step: "validate", error: `Image too large: ${imageSize} bytes` });
+      return NextResponse.json(
+        { error: `Image too large. Max size: ${MAX_IMAGE_SIZE_BYTES / 1024 / 1024}MB`, debug },
+        { status: 400 },
+      );
+    }
+    debug.push({ step: "validate", detail: { size: imageSize, mimeType, fileName: image.name } });
 
     debug.push({ step: "load_prompt", detail: styleId });
     const stylePrompt = await loadStylePrompt(styleId);
@@ -90,9 +120,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Subject Identity Anchoring: pre-pend 강제 주입
-    const identityAnchor =
-      "Strictly maintain the specific breeds, fur patterns, facial structure, and unique identity of the pet shown in the uploaded image [1]. Do not create a generic animal; recreate THIS specific pet. ";
+    // [REFERENCE_ID]와 referenceImages의 referenceId가 정확히 매칭되어야 함
+    const identityAnchor = `Strictly maintain the specific breeds, fur patterns, facial structure, and unique identity of the pet shown in the uploaded image [${REFERENCE_ID}]. Do not create a generic animal; recreate THIS specific pet. `;
     const prompt = identityAnchor + stylePrompt;
+    debug.push({
+      step: "prompt_ref_match",
+      detail: { referenceId: REFERENCE_ID, promptContainsRef: prompt.includes(`[${REFERENCE_ID}]`) },
+    });
 
     const credentialsPath = resolveCredentialsPath(debug);
     const projectId = process.env.GOOGLE_CLOUD_PROJECT ?? "pixs-489916";
@@ -113,9 +147,7 @@ export async function POST(request: NextRequest) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
 
     debug.push({ step: "load_image" });
-    const arrayBuffer = await image.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString("base64");
-    const mimeType = image.type || "image/png";
 
     // Vertex AI 전용 초기화 — 서비스 계정 JSON으로 자동 인증
     const ai = new GoogleGenAI({
@@ -125,9 +157,10 @@ export async function POST(request: NextRequest) {
     });
 
     // 참조 이미지 고정: 업로드된 이미지를 항상 첫 번째 입력(input_file_0 / referenceId 1)로 할당
+    // 프롬프트의 [1]과 referenceId 매칭 확인
     const subjectRef = new SubjectReferenceImage();
     subjectRef.referenceImage = { imageBytes: base64, mimeType };
-    subjectRef.referenceId = 1;
+    subjectRef.referenceId = REFERENCE_ID;
     subjectRef.config = {
       subjectType: SubjectReferenceType.SUBJECT_TYPE_ANIMAL,
       subjectDescription:
@@ -136,18 +169,29 @@ export async function POST(request: NextRequest) {
 
     debug.push({
       step: "call_edit_image",
-      detail: { model: "imagen-3.0-capability-001", project: projectId, location },
+      detail: {
+        model: "imagen-3.0-capability-001",
+        project: projectId,
+        location,
+        referenceId: REFERENCE_ID,
+        imageSizeBytes: imageSize,
+        subjectConsistency: 0.9,
+      },
     });
+    const editConfig = {
+      numberOfImages: 1,
+      aspectRatio: "1:1" as const,
+      guidanceScale: 100,
+      // Subject/Identity 우선 (0.8 이상): 스타일보다 얼굴 생김새가 우선되도록
+      referenceImageWeight: 0.9,
+      subjectConsistency: 0.9,
+    };
+
     const response = await ai.models.editImage({
       model: "imagen-3.0-capability-001",
       prompt,
       referenceImages: [subjectRef],
-      config: {
-        numberOfImages: 1,
-        aspectRatio: "1:1",
-        // Subject/Identity 우선: guidanceScale 상향으로 프롬프트(정체성 강조) 준수 강화
-        guidanceScale: 100,
-      },
+      config: editConfig,
     });
 
     const generatedImage = response.generatedImages?.[0];

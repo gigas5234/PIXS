@@ -61,19 +61,19 @@ const STYLES: StyleDef[] = [
     title: "Picasso",
     subtitle: "입체주의·기하학적 해체",
     concept: "atelier",
-    imageSrc: null, // TODO: "/gallery/renaissance_sample.png"
+    imageSrc: null,
     placeholderGradient: "radial-gradient(ellipse at 55% 22%, #2d1c10 0%, #180e08 50%, #0f0b0a 100%)",
     note: "대상을 해체하고 재조합하는 입체주의적 시선을 담아냅니다. 반려동물의 고유한 특징을 대담한 선과 기하학적 면으로 표현하여, 세상 어디에도 없는 독창적인 현대 미술 작품으로 승화시킵니다.",
   },
   {
-    id: "korean-minhwa",
+    id: "renaissance",
     num: "05",
-    title: "Korean Minhwa",
-    subtitle: "한지·오방색의 민화 정신",
+    title: "Renaissance",
+    subtitle: "왕실의 품격, 정밀한 구도",
     concept: "atelier",
     imageSrc: null,
-    placeholderGradient: "radial-gradient(ellipse at 50% 40%, #3d2a1a 0%, #2a1a0f 50%, #1a1208 100%)",
-    note: "조선 시대 민화의 우아한 먹선과 오방색의 정수를 담아냅니다. 한지 위에 펼쳐지는 반려동물의 호원 자세와 정갈한 붓 터치는, 세대를 넘어 전해오는 한국민화의 따뜻하고 해학적인 정신을 담아냅니다.",
+    placeholderGradient: "radial-gradient(ellipse at 50% 30%, #2d1c10 0%, #180e08 50%, #0f0b0a 100%)",
+    note: "대칭적 구도와 화려한 벨벳·레이스로 왕실 초상화의 품격을 담아냅니다. 반려동물을 정밀한 유화 기법으로 기록합니다.",
   },
   {
     id: "marvel-hero",
@@ -114,6 +114,16 @@ const STYLES: StyleDef[] = [
     imageSrc: null, // TODO: "/gallery/western_sample.png"
     placeholderGradient: "radial-gradient(ellipse at 50% 40%, #1e1508 0%, #120c04 50%, #080604 100%)",
     note: "거친 황야의 고독과 클래식 시네마의 묵직한 명암 대비를 재현합니다. 빛바랜 세피아 톤과 거친 필름 입자를 통해 반려동물의 묵직한 존재감과 서부 영화 속 주인공 같은 카리스마를 강조합니다.",
+  },
+  {
+    id: "korean-minhwa",
+    num: "10",
+    title: "Korean Minhwa",
+    subtitle: "한지·오방색의 민화 정신",
+    concept: "cinematic",
+    imageSrc: null,
+    placeholderGradient: "radial-gradient(ellipse at 50% 40%, #3d2a1a 0%, #2a1a0f 50%, #1a1208 100%)",
+    note: "조선 시대 민화의 우아한 먹선과 오방색의 정수를 담아냅니다. 한지 위에 펼쳐지는 반려동물의 호원 자세와 정갈한 붓 터치는, 세대를 넘어 전해오는 한국민화의 따뜻하고 해학적인 정신을 담아냅니다.",
   },
 ];
 
