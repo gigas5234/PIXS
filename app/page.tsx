@@ -119,29 +119,30 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
     <motion.button
       type="button"
       onClick={onClick}
-      whileHover={{ y: -3, scale: 1.03 }}
+      whileHover={{ y: -5 }}
       whileTap={{ scale: 0.96 }}
-      transition={{ duration: 0.18 }}
-      className={`relative w-[92px] flex-none rounded-xl border p-3 text-left transition-[border-color,box-shadow,background-color] duration-300 ${
-        isSelected
-          ? "border-[#800808]/80 bg-[#800808]/12 shadow-[0_0_22px_rgba(128,8,8,0.28)]"
-          : "border-white/[0.07] bg-white/[0.03] hover:border-white/16 hover:bg-white/[0.05]"
-      }`}
+      transition={{ type: "spring", stiffness: 320, damping: 28 }}
+      className="relative w-[92px] flex-none rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 text-left transition-colors duration-300 hover:border-white/14 hover:bg-white/[0.05]"
     >
-      <AnimatePresence>
-        {isSelected && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="pointer-events-none absolute inset-0 rounded-xl bg-[radial-gradient(ellipse_at_50%_0%,rgba(128,8,8,0.22),transparent_70%)]"
-          />
-        )}
-      </AnimatePresence>
-      <p className="font-mono text-[9px] tracking-[0.2em] text-white/32">{style.num}</p>
-      <p className="font-serif-display mt-1.5 text-[13px] leading-tight text-white">{style.title}</p>
-      <p className="lux-copy mt-1 line-clamp-2 text-[10px] text-white/46">{style.subtitle}</p>
+      {/* Shared layout — slides smoothly between selected cards (Apple-style) */}
+      {isSelected && (
+        <motion.div
+          layoutId="dock-selection"
+          className="absolute inset-0 rounded-xl border border-[#800808]/80 bg-[#800808]/12 shadow-[0_0_24px_rgba(128,8,8,0.3)]"
+          transition={{ type: "spring", stiffness: 400, damping: 40 }}
+        />
+      )}
+      {isSelected && (
+        <motion.div
+          layoutId="dock-glow"
+          className="pointer-events-none absolute inset-0 rounded-xl"
+          style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(128,8,8,0.26), transparent 72%)" }}
+          transition={{ type: "spring", stiffness: 400, damping: 40 }}
+        />
+      )}
+      <p className="relative z-10 font-mono text-[9px] tracking-[0.2em] text-white/32">{style.num}</p>
+      <p className="relative z-10 font-serif-display mt-1.5 text-[13px] leading-tight text-white">{style.title}</p>
+      <p className="relative z-10 lux-copy mt-1 line-clamp-2 text-[10px] text-white/46">{style.subtitle}</p>
     </motion.button>
   );
 }
@@ -244,36 +245,52 @@ export default function HomePage() {
           <div className="grid items-center gap-6 lg:grid-cols-[3fr_2fr]">
 
             {/* ── Canvas ── */}
-            <div
-              className="relative aspect-[4/3] min-h-[240px] overflow-hidden rounded-2xl border border-white/[0.07]"
-              style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 4px 80px rgba(0,0,0,0.7)" }}
+            {/* Fixed height prevents layout shift when switching styles */}
+            <motion.div
+              animate={{
+                boxShadow: [
+                  `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
+                  `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 55px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0.22)`,
+                  `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
+                ],
+              }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+              className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0a0a]"
+              style={{ height: "clamp(240px, 44vw, 480px)" }}
             >
               <div className="noise-overlay" />
 
-              {/* Animated background: image or gradient */}
+              {/* Gradient background (always present, transitions between styles) */}
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={selectedId}
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.03 }}
-                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  key={selectedId + "-bg"}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4 }}
                   className="absolute inset-0"
-                  style={
-                    selected.imageSrc
-                      ? {
-                          backgroundImage: `url('${selected.imageSrc}')`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                        }
-                      : { background: selected.placeholderGradient }
-                  }
+                  style={{ background: selected.placeholderGradient }}
                 />
               </AnimatePresence>
 
-              {/* Vignette overlays */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
+              {/* Sample image — object-contain prevents cropping */}
+              <AnimatePresence mode="wait">
+                {selected.imageSrc && (
+                  <motion.img
+                    key={selectedId + "-img"}
+                    src={selected.imageSrc}
+                    alt={selected.title}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.02 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0 h-full w-full object-contain"
+                  />
+                )}
+              </AnimatePresence>
+
+              {/* Vignette — lighter so image details show */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
               {/* Placeholder label */}
               {!selected.imageSrc && (
@@ -282,14 +299,14 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* Museum plaque (animated with canvas) */}
+              {/* Museum plaque */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedId + "-plaque"}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.35, delay: 0.15 }}
+                  transition={{ duration: 0.35, delay: 0.25 }}
                   className="absolute bottom-4 left-5 right-5 flex items-end justify-between"
                 >
                   <div>
@@ -301,7 +318,7 @@ export default function HomePage() {
                   <p className="font-mono text-[10px] text-white/30">{selected.num}</p>
                 </motion.div>
               </AnimatePresence>
-            </div>
+            </motion.div>
 
             {/* ── Stylist's Note ── */}
             <div className="py-2 lg:py-4 lg:pl-2">
