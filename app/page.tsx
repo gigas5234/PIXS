@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles, PenLine, Camera, Palette, Star } from "lucide-react";
@@ -141,19 +141,19 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
     <motion.button
       type="button"
       onClick={onClick}
-      whileHover={{ y: -4, scale: 1.02 }}
+      whileHover={{ y: -2, scale: 1.02 }}
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
-      className="relative h-[120px] w-[125px] flex-none cursor-pointer rounded-xl border-2 p-3 text-left shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#800808]/60 focus:ring-offset-2 focus:ring-offset-[#080808]"
+      className="relative h-[96px] w-[100px] flex-none cursor-pointer rounded-lg border-2 p-2 text-left shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#800808]/60 focus:ring-offset-2 focus:ring-offset-[#080808]"
       style={{
         borderColor: isSelected ? "rgba(128,8,8,0.8)" : "rgba(255,255,255,0.12)",
         backgroundColor: isSelected ? "rgba(128,8,8,0.15)" : "rgba(255,255,255,0.06)",
-        boxShadow: isSelected ? "0 4px 20px rgba(128,8,8,0.25)" : "0 4px 12px rgba(0,0,0,0.4)",
+        boxShadow: isSelected ? "0 3px 16px rgba(128,8,8,0.25)" : "0 3px 10px rgba(0,0,0,0.4)",
       }}
     >
-      <p className="relative z-10 font-mono text-[9px] tracking-[0.25em] text-white/32">{style.num}</p>
-      <p className="relative z-10 font-serif-display mt-1.5 text-[13px] leading-tight text-white">{style.title}</p>
-      <p className="relative z-10 lux-copy mt-1 line-clamp-2 text-[10px] text-white/46">{style.subtitle}</p>
+      <p className="relative z-10 font-mono text-[7px] tracking-[0.2em] text-white/32">{style.num}</p>
+      <p className="relative z-10 font-serif-display mt-1 text-[11px] leading-tight text-white">{style.title}</p>
+      <p className="relative z-10 lux-copy mt-0.5 line-clamp-2 text-[8px] text-white/46">{style.subtitle}</p>
     </motion.button>
   );
 }
@@ -177,7 +177,6 @@ export default function HomePage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
   const selected = STYLES.find((s) => s.id === selectedId) ?? STYLES[0];
-  const uploadSectionRef = useRef<HTMLElement>(null);
   const canGenerate = Boolean(uploadedFile && selectedId);
 
   const addLog = useCallback((entry: Omit<LogEntry, "id" | "time">) => {
@@ -290,10 +289,7 @@ export default function HomePage() {
     };
   }, [uploadPreviewUrl]);
 
-  const handleStyleSelect = useCallback((id: string) => {
-    setSelectedId(id);
-    uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
+  const handleStyleSelect = useCallback((id: string) => setSelectedId(id), []);
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#080808] text-white">
@@ -506,7 +502,7 @@ export default function HomePage() {
             <p className="mb-2 text-[10px] tracking-[0.37em] text-[#d2a2aa] uppercase">
               The Stylist&apos;s Collection
             </p>
-            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {STYLES.map((style) => (
                 <DockCard
                   key={style.id}
@@ -558,7 +554,6 @@ export default function HomePage() {
             3. Upload Section (사진 업로드) — 스타일 선택 후
         ══════════════════════════════════════ */}
         <motion.section
-          ref={uploadSectionRef}
           id="upload-section"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
