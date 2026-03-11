@@ -13,11 +13,15 @@ type SubStyle = {
   promptTemplate?: string;
 };
 
+type StudioSelectorProps = {
+  onUploadStart?: () => void;
+};
+
 const subStyleCatalog: Record<StyleCategory, SubStyle[]> = {
   atelier: [
-    { id: "rembrandt", title: "Rembrandt", description: "깊은 명암 대비와 왕실 초상화의 무게감." },
+    { id: "rembrandt", title: "Rembrandt", description: "빛과 그림자의 강렬한 대비" },
     { id: "vermeer", title: "Vermeer", description: "부드러운 자연광과 고요한 미술관의 분위기." },
-    { id: "van-gogh", title: "Van Gogh", description: "생동감 있는 붓터치와 감성적인 임파스토." },
+    { id: "van-gogh", title: "Van Gogh", description: "살아 움직이는 듯한 역동적인 붓 터치" },
     { id: "picasso", title: "Picasso", description: "현대적 구도와 예술적 해석이 강조된 초상." },
   ],
   cinematic: [
@@ -28,7 +32,7 @@ const subStyleCatalog: Record<StyleCategory, SubStyle[]> = {
   ],
 };
 
-export function StudioSelector() {
+export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
   const [selectedCategory, setSelectedCategory] = useState<StyleCategory>("atelier");
   const [selectedStyleId, setSelectedStyleId] = useState<string | null>(null);
   const [isDropzoneOpen, setIsDropzoneOpen] = useState(false);
@@ -44,6 +48,7 @@ export function StudioSelector() {
 
   const triggerUpload = () => {
     setIsDropzoneOpen(true);
+    onUploadStart?.();
     fileInputRef.current?.click();
   };
 
@@ -65,8 +70,8 @@ export function StudioSelector() {
   return (
     <section className="mt-14 rounded-[1.8rem] border border-white/10 bg-white/[0.02] px-5 py-8 sm:px-8 sm:py-10">
       <div className="mb-7 text-center">
-        <p className="text-xs tracking-[0.2em] text-[#e1c16e]/85 uppercase">Studio Selector</p>
-        <h2 className="font-serif-display mt-3 text-3xl text-[#f9f1d8] sm:text-4xl">Pick Your Master&apos;s Mood</h2>
+        <p className="text-xs tracking-[0.2em] text-[#a7424f]/85 uppercase">Studio Selector</p>
+        <h2 className="font-serif-display mt-3 text-3xl text-[#f9e8eb] sm:text-4xl">당신의 스타일을 선택하세요</h2>
         <p className="mx-auto mt-3 max-w-2xl text-sm text-white/70 sm:text-base">
           선택한 메인 컨셉에 맞춰 세부 작가/장르 스타일을 고르고, 이후 AI 프롬프트 주입이 가능한 구조로 확장됩니다.
         </p>
@@ -78,7 +83,7 @@ export function StudioSelector() {
           onClick={() => onPickCategory("atelier")}
           className={`rounded-xl px-4 py-3 text-sm font-medium transition ${
             selectedCategory === "atelier"
-              ? "bg-[#e1c16e]/18 text-[#f4dfaa]"
+              ? "bg-[#800808]/26 text-[#f4c8cf]"
               : "bg-transparent text-white/65 hover:bg-white/5"
           }`}
         >
@@ -89,7 +94,7 @@ export function StudioSelector() {
           onClick={() => onPickCategory("cinematic")}
           className={`rounded-xl px-4 py-3 text-sm font-medium transition ${
             selectedCategory === "cinematic"
-              ? "bg-[#e1c16e]/18 text-[#f4dfaa]"
+              ? "bg-[#800808]/26 text-[#f4c8cf]"
               : "bg-transparent text-white/65 hover:bg-white/5"
           }`}
         >
@@ -123,33 +128,33 @@ export function StudioSelector() {
                 isSelected
                   ? {
                       boxShadow: [
-                        "0 0 0 rgba(225, 193, 110, 0.0)",
-                        "0 0 22px rgba(225, 193, 110, 0.3)",
-                        "0 0 14px rgba(225, 193, 110, 0.2)",
+                        "0 0 0 rgba(94, 11, 21, 0.0)",
+                        "0 0 22px rgba(128, 8, 8, 0.35)",
+                        "0 0 14px rgba(128, 8, 8, 0.28)",
                       ],
                     }
-                  : { boxShadow: "0 0 0 rgba(225, 193, 110, 0)" }
+                  : { boxShadow: "0 0 0 rgba(94, 11, 21, 0)" }
               }
               transition={{ duration: 1.6, repeat: isSelected ? Infinity : 0, ease: "easeInOut" }}
               className={`group relative overflow-hidden rounded-2xl border bg-black/40 p-4 text-left backdrop-blur-xl transition ${
-                isSelected ? "border-[#e1c16e]/80" : "border-white/10 hover:border-[#e1c16e]/35"
+                isSelected ? "border-[#800808]/85" : "border-white/10 hover:border-[#800808]/55"
               }`}
             >
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_12%,rgba(225,193,110,0.14),transparent_40%)] opacity-0 transition group-hover:opacity-100" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_12%,rgba(128,8,8,0.22),transparent_40%)] opacity-0 transition group-hover:opacity-100" />
 
               <div className="relative z-10">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-serif-display text-lg text-[#f8efcf]">{style.title}</h3>
+                  <h3 className="font-serif-display text-lg text-[#f8dde2]">{style.title}</h3>
                   <AnimatePresence>
                     {isSelected ? (
                       <motion.span
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
-                        className="inline-flex items-center gap-1 rounded-full border border-[#e1c16e]/45 bg-[#e1c16e]/18 px-2 py-1 text-[10px] tracking-wide text-[#f6e3ab]"
+                        className="inline-flex items-center gap-1 rounded-full border border-[#800808]/55 bg-[#800808]/28 px-2 py-1 text-[10px] tracking-wide text-[#f5c9cf]"
                       >
                         <Check size={12} />
-                        The Master&apos;s Pick
+                        선택됨
                       </motion.span>
                     ) : null}
                   </AnimatePresence>
@@ -174,10 +179,10 @@ export function StudioSelector() {
             <button
               type="button"
               onClick={triggerUpload}
-              className="gold-border-glow inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#221a0f]/85 px-5 py-4 text-sm font-semibold tracking-wide text-[#f6e2a6] transition hover:bg-[#2a2112]"
+              className="gold-border-glow inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#250f14]/85 px-5 py-4 text-sm font-semibold tracking-wide text-[#f5c2cb] transition hover:bg-[#311218]"
             >
               <Upload size={16} />
-              Upload &amp; Start Artification
+              업로드하고 아트 생성 시작하기
             </button>
 
             <input
@@ -186,7 +191,7 @@ export function StudioSelector() {
               accept="image/*"
               className="hidden"
               onChange={onFileChange}
-              aria-label="Upload pet image"
+              aria-label="반려동물 이미지 업로드"
             />
 
             <AnimatePresence>
@@ -196,13 +201,13 @@ export function StudioSelector() {
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.35 }}
-                  className="mt-4 overflow-hidden rounded-2xl border border-dashed border-[#e1c16e]/45 bg-black/35 p-5 backdrop-blur-xl"
+                  className="mt-4 overflow-hidden rounded-2xl border border-dashed border-[#800808]/55 bg-black/35 p-5 backdrop-blur-xl"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="font-serif-display text-lg text-[#f8efcf]">{selectedStyle.title} Style Selected</p>
+                      <p className="font-serif-display text-lg text-[#f8dde2]">{selectedStyle.title} 스타일 선택 완료</p>
                       <p className="mt-1 text-sm text-white/70">
-                        {fileName ? `Uploaded: ${fileName}` : "이미지를 드롭하거나 클릭하여 업로드를 완료하세요."}
+                        {fileName ? `업로드 완료: ${fileName}` : "이미지를 드롭하거나 클릭하여 업로드를 완료하세요."}
                       </p>
                     </div>
                     <button
@@ -211,7 +216,7 @@ export function StudioSelector() {
                       className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs text-white/80 hover:bg-white/10"
                     >
                       <WandSparkles size={14} />
-                      Choose File
+                      파일 선택
                     </button>
                   </div>
                 </motion.div>

@@ -3,9 +3,9 @@
 import { motion } from "framer-motion";
 
 const items = [
-  { title: "8K Resolution", description: "초고해상도 디테일로 털결과 눈빛의 질감을 선명하게 보존합니다." },
-  { title: "Studio Lighting", description: "고급 스튜디오 조명 톤을 고정 적용해 일관된 프리미엄 무드를 유지합니다." },
-  { title: "Sharp Focus", description: "피사체 중심의 선명도를 강화해 작품의 몰입감과 존재감을 극대화합니다." },
+  { title: "8K 초고해상도", description: "털결과 눈빛의 디테일을 선명하게 보존해 작품의 완성도를 높입니다." },
+  { title: "스튜디오 조명 연출", description: "전문 스튜디오 라이팅 톤을 적용해 고급스러운 분위기를 유지합니다." },
+  { title: "선명한 피사체 포커스", description: "피사체 중심의 초점을 강화해 몰입감 있는 결과물을 완성합니다." },
 ];
 
 export function LuxuryRevealStack() {
@@ -30,7 +30,7 @@ export function LuxuryRevealStack() {
             }}
             className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm"
           >
-            <h4 className="font-serif-display text-xl text-[#f3dd98]">{item.title}</h4>
+            <h4 className="font-serif-display text-xl text-[#d58a95]">{item.title}</h4>
             <p className="mt-2 text-sm leading-relaxed text-white/72">{item.description}</p>
           </motion.div>
         ))}

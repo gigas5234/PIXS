@@ -15,7 +15,7 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "PIXS | AI Pet Art Studio",
-  description: "The Ultimate Pick for Your Family",
+  description: "우리 아이의 가장 빛나는 순간, 영원한 예술이 되다",
 };
 
 export default function RootLayout({

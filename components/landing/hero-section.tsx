@@ -3,7 +3,11 @@
 import { motion, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
 import { MoveRight, Sparkles } from "lucide-react";
 
-export function HeroSection() {
+type HeroSectionProps = {
+  onStartCreating?: () => void;
+};
+
+export function HeroSection({ onStartCreating }: HeroSectionProps) {
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
   const springX = useSpring(pointerX, { stiffness: 60, damping: 20, mass: 0.5 });
@@ -30,7 +34,7 @@ export function HeroSection() {
       <div className="noise-overlay" />
       <motion.div
         style={{ transform: orbTransform }}
-        className="pointer-events-none absolute -top-16 left-[12%] h-52 w-52 rounded-full bg-[#e1c16e]/25 blur-3xl"
+        className="pointer-events-none absolute -top-16 left-[12%] h-52 w-52 rounded-full bg-[#5e0b15]/30 blur-3xl"
       />
       <motion.div
         style={{ transform: orbTransform }}
@@ -44,17 +48,17 @@ export function HeroSection() {
           transition={{ delay: 0.1, duration: 0.6 }}
           className="mb-6 flex justify-center"
         >
-          <span className="font-serif-display text-xl tracking-[0.22em] text-[#f3df9d] sm:text-2xl">PIXS</span>
+          <span className="font-serif-display text-xl tracking-[0.22em] text-[#d37f89] sm:text-2xl">PIXS</span>
         </motion.div>
 
         <motion.p
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.7 }}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#e1c16e]/45 bg-[#e1c16e]/10 px-4 py-1.5 text-xs tracking-[0.2em] text-[#f2dc9b] uppercase"
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#800808]/45 bg-[#800808]/15 px-4 py-1.5 text-xs tracking-[0.2em] text-[#e2a2aa] uppercase"
         >
           <Sparkles size={14} />
-          Pick + Picture + Studio
+          선택 + 작품 + 스튜디오
         </motion.p>
 
         <motion.h1
@@ -63,7 +67,7 @@ export function HeroSection() {
           transition={{ delay: 0.23, duration: 0.85 }}
           className="font-serif-display text-4xl leading-tight text-[#f9f4e5] sm:text-5xl lg:text-7xl"
         >
-          Your Pet, Eternal Masterpiece
+          우리 아이의 가장 빛나는 순간, 영원한 예술이 되다
         </motion.h1>
 
         <motion.p
@@ -72,7 +76,7 @@ export function HeroSection() {
           transition={{ delay: 0.35, duration: 0.8 }}
           className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-white/76 sm:text-base"
         >
-          The Ultimate Pick for Your Family
+          PIXS가 선택한 프리미엄 무드로 단 하나의 마스터피스를 완성합니다.
         </motion.p>
 
         <motion.div
@@ -83,16 +87,17 @@ export function HeroSection() {
         >
           <button
             type="button"
-            className="gold-border-glow inline-flex items-center gap-2 rounded-full bg-[#211b0f]/80 px-7 py-3 text-sm font-semibold tracking-wide text-[#f6e2a6] transition hover:bg-[#282010]"
+            onClick={onStartCreating}
+            className="gold-border-glow inline-flex items-center gap-2 rounded-full bg-[#2a0f15]/82 px-7 py-3 text-sm font-semibold tracking-wide text-[#f4c8cf] transition hover:bg-[#360f18]"
           >
-            Start Creating
+            시작하기
             <MoveRight size={16} />
           </button>
           <button
             type="button"
             className="rounded-full border border-white/20 bg-white/5 px-7 py-3 text-sm text-white/80 transition hover:border-white/40 hover:bg-white/10"
           >
-            Explore Themes
+            스타일 둘러보기
           </button>
         </motion.div>
       </div>
