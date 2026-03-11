@@ -4,18 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Download, Share2, RotateCcw } from "lucide-react";
-
-const PROGRESS_PHRASES: { min: number; max: number; text: string }[] = [
-  { min: 0, max: 30, text: "거장의 시선으로 반려동물의 영혼을 읽는 중..." },
-  { min: 31, max: 60, text: "시간을 초월한 붓 터치를 캔버스에 담는 중..." },
-  { min: 61, max: 90, text: "할리우드 스튜디오의 압도적인 조명을 조율하는 중..." },
-  { min: 91, max: 100, text: "마지막 마스터피스의 서명을 새기는 중..." },
-];
-
-function getPhraseForProgress(progress: number): string {
-  const found = PROGRESS_PHRASES.find((p) => progress >= p.min && progress <= p.max);
-  return found?.text ?? PROGRESS_PHRASES[0].text;
-}
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 type ResultViewProps = {
   styleId: string;
@@ -41,7 +30,6 @@ export function ResultView({ styleId }: ResultViewProps) {
   // API 연결 시 pixs:resultImageUrl 사용, 미연결 시 업로드 미리보기로 대체
   const resultImageUrl = resultImageUrlFromStorage ?? uploadPreviewUrl;
 
-  const phrase = getPhraseForProgress(progress);
   const isLoading = !isRevealed;
 
   useEffect(() => {
@@ -126,88 +114,7 @@ export function ResultView({ styleId }: ResultViewProps) {
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-10">
         <AnimatePresence mode="wait">
           {isLoading ? (
-            /* ═══ The Artist's Work — Loading State ═══ */
-            <motion.section
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mx-auto w-full max-w-2xl"
-            >
-              <p className="mb-6 text-center text-[10px] tracking-[0.32em] text-[#b45d69] uppercase">
-                The Artist&apos;s Work
-              </p>
-
-              {/* Empty canvas with smoking blur */}
-              <motion.div
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative aspect-square w-full max-w-[min(50vw,420px)] overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a]"
-                style={{
-                  boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 20px 80px rgba(0,0,0,0.8)",
-                }}
-              >
-                {/* Smoking blur — rising mist effect */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <motion.div
-                    animate={{
-                      backgroundPosition: ["0% 100%", "0% 0%"],
-                      opacity: [0.4, 0.8, 0.4],
-                    }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-0"
-                    style={{
-                      backgroundImage: `radial-gradient(ellipse 80% 60% at 50% 80%, rgba(180,80,95,0.25) 0%, transparent 50%),
-                        radial-gradient(ellipse 60% 40% at 50% 70%, rgba(140,50,65,0.2) 0%, transparent 45%)`,
-                      backgroundSize: "100% 100%",
-                    }}
-                  />
-                  <motion.div
-                    animate={{
-                      opacity: [0.15, 0.35, 0.15],
-                      filter: ["blur(12px)", "blur(18px)", "blur(12px)"],
-                    }}
-                    transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-0 bg-gradient-to-t from-[#1a0c10] via-transparent to-transparent"
-                  />
-                </div>
-
-                {/* Subtle shimmer */}
-                <motion.div
-                  animate={{
-                    opacity: [0.02, 0.08, 0.02],
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
-                />
-              </motion.div>
-
-              {/* Progress bar */}
-              <div className="mt-8">
-                <div className="mb-4 h-1 w-full overflow-hidden rounded-full bg-white/[0.06]">
-                  <motion.div
-                    className="h-full rounded-full bg-gradient-to-r from-[#800808]/60 to-[#a03040]"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={phrase}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.4 }}
-                    className="text-center text-sm text-white/75 sm:text-base"
-                  >
-                    {phrase}
-                  </motion.p>
-                </AnimatePresence>
-                <p className="mt-2 text-center font-mono text-[11px] text-white/35">{progress}%</p>
-              </div>
-            </motion.section>
+            <LoadingScreen key="loading" progress={progress} />
           ) : (
             /* ═══ The Reveal — Result State ═══ */
             <motion.section

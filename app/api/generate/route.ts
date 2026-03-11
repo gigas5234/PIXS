@@ -5,6 +5,32 @@ import { tmpdir } from "node:os";
 import { GoogleGenAI, SubjectReferenceImage, SubjectReferenceType } from "@google/genai";
 import { loadStylePrompt } from "@/lib/prompts/load-style-prompt";
 
+/** 이미지에서 동물 종류(Cat/Dog) 감지. 실패 시 "pet" 반환. */
+async function detectSpeciesFromImage(
+  ai: GoogleGenAI,
+  base64: string,
+  mimeType: string,
+  debug: { step?: string; detail?: unknown }[],
+): Promise<string> {
+  try {
+    const res = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [
+        { inlineData: { data: base64, mimeType } },
+        { text: "What is the primary animal in this image? Reply with exactly one word: Cat or Dog. If unclear or neither, reply: pet." },
+      ],
+    });
+    const text =
+      res.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase() ?? "pet";
+    const species = text === "cat" ? "Cat" : text === "dog" ? "Dog" : "pet";
+    debug.push({ step: "species_detect", detail: { raw: text, species } });
+    return species;
+  } catch (e) {
+    debug.push({ step: "species_detect", detail: "fallback to pet", error: String(e) });
+    return "pet";
+  }
+}
+
 function resolveCredentialsPath(debug: { step?: string; detail?: unknown }[]): string | null {
   const base64Env = process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64;
   if (base64Env) {
@@ -109,25 +135,6 @@ export async function POST(request: NextRequest) {
     }
     debug.push({ step: "validate", detail: { size: imageSize, mimeType, fileName: image.name } });
 
-    debug.push({ step: "load_prompt", detail: styleId });
-    const stylePrompt = await loadStylePrompt(styleId);
-    if (!stylePrompt) {
-      debug.push({ step: "load_prompt", error: `Unknown style: ${styleId}` });
-      return NextResponse.json(
-        { error: `Unknown style: ${styleId}`, debug },
-        { status: 400 },
-      );
-    }
-
-    // Subject Identity Anchoring: pre-pend 강제 주입
-    // [REFERENCE_ID]와 referenceImages의 referenceId가 정확히 매칭되어야 함
-    const identityAnchor = `Strictly maintain the specific breeds, fur patterns, facial structure, and unique identity of the pet shown in the uploaded image [${REFERENCE_ID}]. Do not create a generic animal; recreate THIS specific pet. `;
-    const prompt = identityAnchor + stylePrompt;
-    debug.push({
-      step: "prompt_ref_match",
-      detail: { referenceId: REFERENCE_ID, promptContainsRef: prompt.includes(`[${REFERENCE_ID}]`) },
-    });
-
     const credentialsPath = resolveCredentialsPath(debug);
     const projectId = process.env.GOOGLE_CLOUD_PROJECT ?? "pixs-489916";
     const location = process.env.GOOGLE_CLOUD_LOCATION ?? "us-central1";
@@ -149,14 +156,36 @@ export async function POST(request: NextRequest) {
     debug.push({ step: "load_image" });
     const base64 = Buffer.from(arrayBuffer).toString("base64");
 
-    // Vertex AI 전용 초기화 — 서비스 계정 JSON으로 자동 인증
     const ai = new GoogleGenAI({
       vertexai: true,
       project: projectId,
       location,
     });
 
+    // [Species] 동적 치환: 이미지 분석으로 Cat/Dog 감지
+    const species = await detectSpeciesFromImage(ai, base64, mimeType, debug);
+
+    debug.push({ step: "load_prompt", detail: styleId });
+    const stylePrompt = await loadStylePrompt(styleId, species);
+    if (!stylePrompt) {
+      debug.push({ step: "load_prompt", error: `Unknown style: ${styleId}` });
+      return NextResponse.json(
+        { error: `Unknown style: ${styleId}`, debug },
+        { status: 400 },
+      );
+    }
+
+    // Subject Identity Anchoring: pre-pend 강제 주입
+    // [REFERENCE_ID]와 referenceImages의 referenceId가 정확히 매칭되어야 함
+    const identityAnchor = `Strictly maintain the specific breeds, fur patterns, facial structure, and unique identity of the pet shown in the uploaded image [${REFERENCE_ID}]. Do not create a generic animal; recreate THIS specific pet. `;
+    const prompt = identityAnchor + stylePrompt;
+    debug.push({
+      step: "prompt_ref_match",
+      detail: { referenceId: REFERENCE_ID, promptContainsRef: prompt.includes(`[${REFERENCE_ID}]`) },
+    });
+
     // 참조 이미지 고정: 업로드된 이미지를 항상 첫 번째 입력(input_file_0 / referenceId 1)로 할당
+    // 파일명과 무관하게 formData 'image' 키로 전달된 파일 사용
     // 프롬프트의 [1]과 referenceId 매칭 확인
     const subjectRef = new SubjectReferenceImage();
     subjectRef.referenceImage = { imageBytes: base64, mimeType };
@@ -174,17 +203,18 @@ export async function POST(request: NextRequest) {
         project: projectId,
         location,
         referenceId: REFERENCE_ID,
+        species,
         imageSizeBytes: imageSize,
-        subjectConsistency: 0.9,
+        referenceImageWeight: 0.85,
       },
     });
     const editConfig = {
       numberOfImages: 1,
       aspectRatio: "1:1" as const,
       guidanceScale: 100,
-      // Subject/Identity 우선 (0.8 이상): 스타일보다 얼굴 생김새가 우선되도록
-      referenceImageWeight: 0.9,
-      subjectConsistency: 0.9,
+      // Subject/Identity 우선 (0.85): 프롬프트 간소화로 reference weight 상향
+      referenceImageWeight: 0.85,
+      subjectConsistency: 0.85,
     };
 
     const response = await ai.models.editImage({
