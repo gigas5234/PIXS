@@ -77,28 +77,41 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
           boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 20px 80px rgba(0,0,0,0.8)",
         }}
       >
-        {/* 1. Ink Spread — 중앙에서 번지는 물감 효과 (Crimson → Ochre) */}
-        <motion.div
+        {/* 1. Gooey Ink — 중앙에서 번지는 물감 방울 (Crimson) */}
+        <div
           className="absolute inset-0 flex items-center justify-center"
-          initial={false}
-          animate={{
-            opacity: 0.4 + (progress / 100) * 0.35,
+          style={{
+            filter: "contrast(20)",
+            background: "radial-gradient(circle at 50% 50%, rgba(0,0,0,0.9) 0%, #050506 60%)",
           }}
-          transition={{ duration: 0.3 }}
         >
-          <motion.div
-            className="rounded-full"
-            style={{
-              width: 60 + (progress / 100) * 180,
-              height: 60 + (progress / 100) * 180,
-              background: `radial-gradient(circle, ${OCHRE_LIGHT} 0%, ${CRIMSON_LIGHT} 40%, transparent 70%)`,
-              boxShadow: `0 0 40px ${CRIMSON_LIGHT}, 0 0 80px ${OCHRE_LIGHT}`,
-            }}
-            transition={{ duration: 0.4 }}
-          />
-        </motion.div>
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              // eslint-disable-next-line react/no-array-index-key
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                width: 80 + i * 22,
+                height: 80 + i * 22,
+                background: CRIMSON,
+                filter: "blur(12px)",
+              }}
+              initial={{ scale: 0, opacity: 0.9 }}
+              animate={{
+                scale: [0, 1.6 + i * 0.2, 2 + i * 0.3],
+                opacity: [0.9, 0.8, 0],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.5,
+              }}
+            />
+          ))}
+        </div>
 
-        {/* 2. SVG Brush Strokes — 유려한 붓 터치 */}
+        {/* 2. SVG Brush Strokes — 거친 붓 터치 + 입자감 */}
         <svg
           className="absolute inset-0 h-full w-full"
           viewBox="0 0 320 320"
@@ -108,17 +121,27 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
         >
           <defs>
             <linearGradient id="brushGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={CRIMSON} stopOpacity={0.9} />
-              <stop offset="50%" stopColor={OCHRE} stopOpacity={0.85} />
-              <stop offset="100%" stopColor={CRIMSON} stopOpacity={0.9} />
+              <stop offset="0%" stopColor={CRIMSON} stopOpacity={0.95} />
+              <stop offset="50%" stopColor={OCHRE} stopOpacity={0.9} />
+              <stop offset="100%" stopColor={CRIMSON} stopOpacity={0.95} />
             </linearGradient>
+            {/* SVG Turbulence로 붓 터치 질감 부여 */}
+            <filter id="brush-texture">
+              <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" result="noise" />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" />
+            </filter>
           </defs>
-          {/* 붓 터치 경로들 — pathLength로 그려지는 연출 */}
+          {/* 붓 터치 경로들 — pathLength로 그려지는 연출 + 거친 텍스처 */}
           <motion.path
             d="M 40 160 Q 100 80 160 120 T 280 140"
             stroke="url(#brushGradient)"
-            strokeWidth="3"
-            fill="none"
+            strokeWidth="5"
+            filter="url(#brush-texture)"
+            className="oil-paint-stroke"
+            style={{
+              boxShadow:
+                "inset 2px 2px 5px rgba(255,255,255,0.18), 2px 2px 12px rgba(0,0,0,0.65)",
+            }}
             initial={{ pathLength: 0 }}
             animate={{ pathLength: Math.min(1, progress / 35) }}
             transition={{ duration: strokeDuration, ease: "easeOut" }}
@@ -126,8 +149,12 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
           <motion.path
             d="M 60 220 Q 140 180 200 200 T 260 260"
             stroke="url(#brushGradient)"
-            strokeWidth="2.5"
-            fill="none"
+            strokeWidth="4"
+            filter="url(#brush-texture)"
+            style={{
+              boxShadow:
+                "inset 2px 2px 4px rgba(255,255,255,0.16), 2px 2px 10px rgba(0,0,0,0.55)",
+            }}
             initial={{ pathLength: 0 }}
             animate={{ pathLength: Math.min(1, Math.max(0, (progress - 20) / 40)) }}
             transition={{ duration: strokeDuration, ease: "easeOut" }}
@@ -135,8 +162,12 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
           <motion.path
             d="M 80 100 Q 160 60 220 100"
             stroke="url(#brushGradient)"
-            strokeWidth="2"
-            fill="none"
+            strokeWidth="3.5"
+            filter="url(#brush-texture)"
+            style={{
+              boxShadow:
+                "inset 1px 1px 3px rgba(255,255,255,0.16), 2px 2px 9px rgba(0,0,0,0.5)",
+            }}
             initial={{ pathLength: 0 }}
             animate={{ pathLength: Math.min(1, Math.max(0, (progress - 40) / 35)) }}
             transition={{ duration: strokeDuration, ease: "easeOut" }}
@@ -144,8 +175,12 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
           <motion.path
             d="M 100 250 Q 180 220 240 240"
             stroke="url(#brushGradient)"
-            strokeWidth="2"
-            fill="none"
+            strokeWidth="3.5"
+            filter="url(#brush-texture)"
+            style={{
+              boxShadow:
+                "inset 1px 1px 3px rgba(255,255,255,0.16), 2px 2px 9px rgba(0,0,0,0.5)",
+            }}
             initial={{ pathLength: 0 }}
             animate={{ pathLength: Math.min(1, Math.max(0, (progress - 60) / 30)) }}
             transition={{ duration: strokeDuration, ease: "easeOut" }}
