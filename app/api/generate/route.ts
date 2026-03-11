@@ -1,7 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { GoogleGenAI, SubjectReferenceImage, SubjectReferenceType } from "@google/genai";
 import { loadStylePrompt } from "@/lib/prompts/load-style-prompt";
+
+function resolveCredentialsPath(debug: { step?: string; detail?: unknown }[]): string | null {
+  const base64Env = process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64;
+  if (base64Env) {
+    try {
+      const json = Buffer.from(base64Env, "base64").toString("utf8");
+      const tmpPath = join(tmpdir(), `pixs-creds-${Date.now()}.json`);
+      writeFileSync(tmpPath, json);
+      debug.push({ step: "credentials", detail: "from GOOGLE_APPLICATION_CREDENTIALS_BASE64" });
+      return tmpPath;
+    } catch (e) {
+      debug.push({ step: "credentials", detail: "Base64 decode failed" });
+      return null;
+    }
+  }
+
+  const pathEnv = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (pathEnv) {
+    const resolved = pathEnv.startsWith("/") ? pathEnv : join(process.cwd(), pathEnv);
+    if (existsSync(resolved)) {
+      debug.push({ step: "credentials", detail: resolved });
+      return resolved;
+    }
+  }
+
+  const fallbackB64 = join(process.cwd(), "keys", "credentials.b64");
+  if (existsSync(fallbackB64)) {
+    try {
+      const b64 = readFileSync(fallbackB64, "utf8").trim();
+      const json = Buffer.from(b64, "base64").toString("utf8");
+      const tmpPath = join(tmpdir(), `pixs-creds-${Date.now()}.json`);
+      writeFileSync(tmpPath, json);
+      debug.push({ step: "credentials", detail: "from keys/credentials.b64" });
+      return tmpPath;
+    } catch {
+      debug.push({ step: "credentials", detail: "keys/credentials.b64 read failed" });
+      return null;
+    }
+  }
+
+  return null;
+}
 
 /**
  * POST /api/generate
@@ -12,8 +56,10 @@ import { loadStylePrompt } from "@/lib/prompts/load-style-prompt";
  *
  * Returns: { imageUrl: string } | { error: string, debug?: object }
  *
- * Vertex AI (Nano Banana / Imagen 3) with service account JSON key.
- * GOOGLE_APPLICATION_CREDENTIALS must point to keys/*.json
+ * Vertex AI (Nano Banana / Imagen 3). 인증 우선순위:
+ * 1. GOOGLE_APPLICATION_CREDENTIALS_BASE64 (Base64 인코딩된 JSON)
+ * 2. GOOGLE_APPLICATION_CREDENTIALS (파일 경로)
+ * 3. keys/credentials.b64 (로컬 폴백)
  */
 export async function POST(request: NextRequest) {
   const debug: { step?: string; error?: string; detail?: unknown }[] = [];
@@ -42,28 +88,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    const projectId = process.env.GOOGLE_CLOUD_PROJECT ?? "pixs-ai-engine";
+    const credentialsPath = resolveCredentialsPath(debug);
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT ?? "pixs-489916";
     const location = process.env.GOOGLE_CLOUD_LOCATION ?? "us-central1";
 
     if (!credentialsPath) {
-      debug.push({ step: "config", error: "GOOGLE_APPLICATION_CREDENTIALS not set" });
+      debug.push({ step: "config", error: "No credentials found" });
       return NextResponse.json(
         {
           error:
-            "GOOGLE_APPLICATION_CREDENTIALS is not set. Set it to the path of your service account JSON (e.g. keys/your-key.json)",
+            "Credentials not found. Set GOOGLE_APPLICATION_CREDENTIALS_BASE64 (Base64 JSON), GOOGLE_APPLICATION_CREDENTIALS (file path), or add keys/credentials.b64",
           debug,
         },
         { status: 500 },
       );
     }
 
-    // Resolve path: if relative, resolve from project root
-    const resolvedPath = credentialsPath.startsWith("/")
-      ? credentialsPath
-      : join(process.cwd(), credentialsPath);
-    process.env.GOOGLE_APPLICATION_CREDENTIALS = resolvedPath;
-    debug.push({ step: "credentials", detail: resolvedPath });
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
 
     debug.push({ step: "load_image" });
     const arrayBuffer = await image.arrayBuffer();
