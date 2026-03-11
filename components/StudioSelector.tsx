@@ -17,6 +17,13 @@ type StudioSelectorProps = {
   onUploadStart?: () => void;
 };
 
+const stylistNotes: Record<string, string> = {
+  rembrandt:
+    "17세기 거장의 키아로스쿠로 기법을 재현합니다. 강렬한 빛과 깊은 그림자 속에 반려동물의 고귀한 눈빛을 담아냅니다.",
+  "marvel-hero":
+    "할리우드 시네마틱 조명과 하이테크 질감을 결합합니다. 평범한 일상을 넘어 웅장한 서사의 주인공으로 재탄생시킵니다.",
+};
+
 const subStyleCatalog: Record<StyleCategory, SubStyle[]> = {
   atelier: [
     { id: "rembrandt", title: "Rembrandt", description: "빛과 그림자의 강렬한 대비" },
@@ -25,7 +32,7 @@ const subStyleCatalog: Record<StyleCategory, SubStyle[]> = {
     { id: "picasso", title: "Picasso", description: "현대적 구도와 예술적 해석이 강조된 초상." },
   ],
   cinematic: [
-    { id: "marvel-hero", title: "Marvel Hero", description: "히어로 포스터 스타일의 강렬한 조명과 실루엣." },
+    { id: "marvel-hero", title: "Heroic", description: "히어로 포스터 스타일의 강렬한 조명과 실루엣." },
     { id: "disney-live-action", title: "Disney Live-action", description: "따뜻하고 영화적인 실사 텍스처 중심 연출." },
     { id: "cyberpunk", title: "Cyberpunk", description: "네온 하이라이트와 미래 도시의 고대비 무드." },
     { id: "western", title: "Western", description: "영화적인 먼지빛 톤과 드라마틱한 역광." },
@@ -35,7 +42,6 @@ const subStyleCatalog: Record<StyleCategory, SubStyle[]> = {
 export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
   const [selectedCategory, setSelectedCategory] = useState<StyleCategory>("atelier");
   const [selectedStyleId, setSelectedStyleId] = useState<string | null>(null);
-  const [isDropzoneOpen, setIsDropzoneOpen] = useState(false);
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,7 +54,6 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
   const hasSelection = selectedStyleId !== null;
 
   const triggerUpload = () => {
-    setIsDropzoneOpen(true);
     onUploadStart?.();
     fileInputRef.current?.click();
   };
@@ -57,7 +62,6 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
     const file = event.target.files?.[0];
     if (file) {
       setFileName(file.name);
-      setIsDropzoneOpen(true);
     }
   };
 
@@ -65,7 +69,6 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
     setSelectedCategory(category);
     setSelectedStyleId(null);
     setFileName("");
-    setIsDropzoneOpen(false);
   };
 
   return (
@@ -137,21 +140,11 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
                   : { boxShadow: "0 0 0 rgba(94, 11, 21, 0)" }
               }
               transition={{ duration: 1.6, repeat: isSelected ? Infinity : 0, ease: "easeInOut" }}
-              className={`group relative overflow-hidden rounded-2xl border bg-black/40 p-4 text-left backdrop-blur-xl transition duration-400 ${
+              className={`group relative overflow-hidden rounded-2xl border bg-[#101113] p-4 text-left transition duration-400 ${
                 isSelected ? "border-[#800808]/85" : "border-white/10 hover:border-[#800808]/55"
               } ${hasSelection && !isSelected ? "opacity-50" : "opacity-100"}`}
             >
-              <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-[#800808]/35 opacity-0 blur-2xl transition duration-500 group-hover:opacity-55" />
-              <motion.div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_12%,rgba(128,8,8,0.22),transparent_40%)] opacity-0 transition group-hover:opacity-100"
-              />
-              <motion.div
-                aria-hidden
-                whileHover={{ scale: 1.04 }}
-                transition={{ duration: 0.45, ease: "easeOut" }}
-                className="absolute inset-x-0 top-0 h-28 origin-center bg-[linear-gradient(145deg,rgba(115,14,25,0.44),rgba(40,16,21,0.16)),radial-gradient(circle_at_18%_10%,rgba(170,70,85,0.32),transparent_56%)]"
-              />
+              <div className="pointer-events-none absolute -inset-3 -z-10 rounded-3xl bg-[#800808]/25 opacity-0 blur-2xl transition duration-500 group-hover:opacity-45" />
 
               <div className="relative z-10">
                 <div className="flex items-start justify-between gap-2">
@@ -185,16 +178,14 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.45 }}
-            className="mt-8"
+            className="mt-8 space-y-4"
           >
-            <button
-              type="button"
-              onClick={triggerUpload}
-              className="gold-border-glow inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#250f14]/85 px-5 py-4 text-sm font-semibold tracking-wide text-[#f5c2cb] transition hover:bg-[#311218]"
-            >
-              <Upload size={16} />
-              업로드하고 아트 생성 시작하기
-            </button>
+            <section className="rounded-2xl border border-[#800808]/35 bg-black/28 px-5 py-4">
+              <p className="text-xs tracking-[0.18em] text-[#ce8993] uppercase">The Stylist&apos;s Note</p>
+              <p className="font-serif-display mt-3 text-sm leading-relaxed text-[#f2d8dc] sm:text-base">
+                {stylistNotes[selectedStyle.id] ?? `${selectedStyle.title} 스타일로 고유한 조명과 질감을 정교하게 적용합니다.`}
+              </p>
+            </section>
 
             <input
               ref={fileInputRef}
@@ -205,34 +196,40 @@ export function StudioSelector({ onUploadStart }: StudioSelectorProps) {
               aria-label="반려동물 이미지 업로드"
             />
 
-            <AnimatePresence>
-              {isDropzoneOpen ? (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="mt-4 overflow-hidden rounded-2xl border border-dashed border-[#800808]/55 bg-black/35 p-5 backdrop-blur-xl"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-serif-display text-lg text-[#f8dde2]">{selectedStyle.title} 스타일 선택 완료</p>
-                      <p className="mt-1 text-sm text-white/70">
-                        {fileName ? `업로드 완료: ${fileName}` : "이미지를 드롭하거나 클릭하여 업로드를 완료하세요."}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs text-white/80 hover:bg-white/10"
-                    >
-                      <WandSparkles size={14} />
-                      파일 선택
-                    </button>
-                  </div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
+            <section className="rounded-2xl border border-[#800808]/45 bg-[#121316] p-5">
+              <p className="font-serif-display text-lg text-[#f8dde2]">파일 업로드</p>
+              <p className="mt-1 text-xs text-white/65">선택한 스타일을 확인한 후, 이미지를 업로드해 작품 생성을 시작하세요.</p>
+              <div
+                className="mt-4 rounded-xl border border-[#800808]/40 bg-black/30 p-4"
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-white/74">{fileName ? `업로드 완료: ${fileName}` : "작품으로 만들 사진을 이곳에 놓아주세요."}</p>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs text-white/80 hover:bg-white/10"
+                  >
+                    <WandSparkles size={14} />
+                    파일 선택
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <button
+              type="button"
+              onClick={triggerUpload}
+              className="gold-border-glow inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#250f14]/85 px-5 py-4 text-sm font-semibold tracking-wide text-[#f5c2cb] transition hover:bg-[#311218]"
+            >
+              <Upload size={16} />
+              업로드하고 아트 생성 시작하기
+            </button>
           </motion.div>
         ) : null}
       </AnimatePresence>
