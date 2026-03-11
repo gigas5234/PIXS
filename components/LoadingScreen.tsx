@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo } from "react";
 
 const PROGRESS_PHRASES: { min: number; max: number; text: string }[] = [
   { min: 0, max: 20, text: "새로운 생명의 선을 긋는 중..." },
@@ -22,63 +21,25 @@ type LoadingScreenProps = {
 
 const CANVAS_SIZE = 320;
 
-/** 적당한 밝기의 랜덤 색상 팔레트 (진한 톤 지양) */
-const STROKE_COLORS = [
-  "rgba(232, 180, 184, 0.75)",  // soft coral
-  "rgba(168, 212, 230, 0.7)",   // dusty blue
-  "rgba(201, 228, 192, 0.7)",   // sage
-  "rgba(226, 212, 240, 0.75)",  // lavender
-  "rgba(245, 230, 200, 0.7)",   // warm gold
-  "rgba(212, 165, 165, 0.7)",   // dusty rose
-  "rgba(156, 180, 168, 0.7)",   // muted teal
-  "rgba(218, 192, 212, 0.7)",   // dusty mauve
-  "rgba(192, 210, 230, 0.65)",  // soft sky
-  "rgba(230, 210, 180, 0.7)",   // warm sand
-];
+/** PIXS 시그니처: 딥 레드(Crimson) & 골드(Ochre) */
+const CRIMSON = "#800808";
+const CRIMSON_LIGHT = "rgba(139, 0, 0, 0.6)";
+const OCHRE = "#C8953D";
+const OCHRE_LIGHT = "rgba(212, 168, 75, 0.5)";
 
-function random(seed: number) {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
-
-function createStrokeData() {
-  const strokes: { type: "stroke" | "dot"; x: number; y: number; w: number; h: number; rot: number; color: string; delay: number }[] = [];
-  for (let i = 0; i < 28; i++) {
-    const isDot = i % 4 === 0;
-    const color = STROKE_COLORS[Math.floor(random(i * 7) * STROKE_COLORS.length)];
-    const delay = random(i * 13) * 9;
-    if (isDot) {
-      strokes.push({
-        type: "dot",
-        x: random(i * 2) * 85 + 5,
-        y: random(i * 3) * 85 + 5,
-        w: 4 + random(i * 5) * 6,
-        h: 4 + random(i * 5) * 6,
-        rot: 0,
-        color,
-        delay,
-      });
-    } else {
-      const len = 20 + random(i * 11) * 70;
-      const rot = random(i * 17) * 360;
-      strokes.push({
-        type: "stroke",
-        x: random(i * 19) * 80 + 5,
-        y: random(i * 23) * 80 + 5,
-        w: 2 + random(i * 29) * 2.5,
-        h: len,
-        rot,
-        color,
-        delay,
-      });
-    }
-  }
-  return strokes;
-}
+/** 캔버스 질감 — CSS 패턴 (유화 캔버스 느낌) */
+const canvasTextureStyle = {
+  backgroundImage: `
+    repeating-linear-gradient(90deg, transparent 0, transparent 1px, rgba(0,0,0,0.04) 1px, rgba(0,0,0,0.04) 2px),
+    repeating-linear-gradient(0deg, transparent 0, transparent 1px, rgba(0,0,0,0.04) 1px, rgba(0,0,0,0.04) 2px),
+    repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 3px)
+  `,
+};
 
 export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) {
   const phrase = getPhraseForProgress(progress);
-  const strokeData = useMemo(() => createStrokeData(), []);
+  const isFinalPhase = progress >= 80;
+  const strokeDuration = isFinalPhase ? 0.25 : 0.6;
 
   return (
     <motion.section
@@ -91,7 +52,7 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
     >
       {/* PIXS 로고 — 상단, 은은하게 깜빡임 */}
       <motion.div
-        animate={{ opacity: [0.06, 0.14, 0.06] }}
+        animate={{ opacity: [0.15, 0.35, 0.15] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         className="mb-6 text-center"
       >
@@ -107,7 +68,7 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
         The Artist&apos;s Work
       </p>
 
-      {/* 캔버스 — 고정 크기, 랜덤 선/점 그어지는 느낌 */}
+      {/* 캔버스 — 거장의 붓 터치 (Master&apos;s Brushstroke) */}
       <div
         className="relative mx-auto overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a]"
         style={{
@@ -116,43 +77,106 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
           boxShadow: "0 0 0 1px rgba(0,0,0,0.9), 0 20px 80px rgba(0,0,0,0.8)",
         }}
       >
-        <div className="absolute inset-0 overflow-hidden">
-          {strokeData.map((s, i) => (
-            <motion.div
-              key={i}
-              className="absolute"
-              style={{
-                left: `${s.x}%`,
-                top: `${s.y}%`,
-                width: s.w,
-                height: s.h,
-                transformOrigin: s.type === "stroke" ? "center top" : "center center",
-                transform: s.type === "dot" ? "translate(-50%, -50%)" : `rotate(${s.rot}deg)`,
-                borderRadius: s.type === "dot" ? "50%" : "999px",
-                background: s.color,
-                boxShadow: `0 0 6px ${s.color}`,
-              }}
-              initial={
-                s.type === "stroke"
-                  ? { scaleY: 0, opacity: 0 }
-                  : { scale: 0, opacity: 0 }
-              }
-              animate={
-                s.type === "stroke"
-                  ? { scaleY: 1, opacity: 0.85 }
-                  : { scale: 1, opacity: 0.85 }
-              }
-              transition={{
-                delay: s.delay,
-                duration: s.type === "dot" ? 0.35 : 0.55,
-                ease: "easeOut",
-              }}
-            />
-          ))}
-        </div>
+        {/* 1. Ink Spread — 중앙에서 번지는 물감 효과 (Crimson → Ochre) */}
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center"
+          initial={false}
+          animate={{
+            opacity: 0.4 + (progress / 100) * 0.35,
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            className="rounded-full"
+            style={{
+              width: 60 + (progress / 100) * 180,
+              height: 60 + (progress / 100) * 180,
+              background: `radial-gradient(circle, ${OCHRE_LIGHT} 0%, ${CRIMSON_LIGHT} 40%, transparent 70%)`,
+              boxShadow: `0 0 40px ${CRIMSON_LIGHT}, 0 0 80px ${OCHRE_LIGHT}`,
+            }}
+            transition={{ duration: 0.4 }}
+          />
+        </motion.div>
+
+        {/* 2. SVG Brush Strokes — 유려한 붓 터치 */}
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 320 320"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <defs>
+            <linearGradient id="brushGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={CRIMSON} stopOpacity={0.9} />
+              <stop offset="50%" stopColor={OCHRE} stopOpacity={0.85} />
+              <stop offset="100%" stopColor={CRIMSON} stopOpacity={0.9} />
+            </linearGradient>
+          </defs>
+          {/* 붓 터치 경로들 — pathLength로 그려지는 연출 */}
+          <motion.path
+            d="M 40 160 Q 100 80 160 120 T 280 140"
+            stroke="url(#brushGradient)"
+            strokeWidth="3"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: Math.min(1, progress / 35) }}
+            transition={{ duration: strokeDuration, ease: "easeOut" }}
+          />
+          <motion.path
+            d="M 60 220 Q 140 180 200 200 T 260 260"
+            stroke="url(#brushGradient)"
+            strokeWidth="2.5"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: Math.min(1, Math.max(0, (progress - 20) / 40)) }}
+            transition={{ duration: strokeDuration, ease: "easeOut" }}
+          />
+          <motion.path
+            d="M 80 100 Q 160 60 220 100"
+            stroke="url(#brushGradient)"
+            strokeWidth="2"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: Math.min(1, Math.max(0, (progress - 40) / 35)) }}
+            transition={{ duration: strokeDuration, ease: "easeOut" }}
+          />
+          <motion.path
+            d="M 100 250 Q 180 220 240 240"
+            stroke="url(#brushGradient)"
+            strokeWidth="2"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: Math.min(1, Math.max(0, (progress - 60) / 30)) }}
+            transition={{ duration: strokeDuration, ease: "easeOut" }}
+          />
+        </svg>
+
+        {/* 3. 캔버스 질감 오버레이 — 진행률에 따라 불투명도 증가 */}
+        <motion.div
+          className="pointer-events-none absolute inset-0"
+          style={canvasTextureStyle}
+          initial={false}
+          animate={{ opacity: (progress / 100) * 0.5 }}
+          transition={{ duration: 0.3 }}
+        />
+        {/* public/texture.jpg — 거친 유화 캔버스 질감 (선택, 추가 시 사용, 없으면 CSS 패턴만) */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/texture.jpg"
+          alt=""
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          style={{ opacity: (progress / 100) * 0.45, display: "none" }}
+          onLoad={(e) => {
+            (e.target as HTMLImageElement).style.display = "block";
+          }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = "none";
+          }}
+        />
       </div>
 
-      {/* 텍스트 + 프로그레스 바 — 붓터치 스타일 */}
+      {/* 텍스트 + 프로그레스 바 */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -173,16 +197,17 @@ export function LoadingScreen({ progress, className = "" }: LoadingScreenProps) 
           </motion.p>
         </AnimatePresence>
 
-        {/* 프로그레스 바 — 붓터치 느낌 (거친 테두리) */}
-        <div className="h-2 w-full overflow-hidden rounded-sm bg-[#1a0a0c] border border-white/[0.06]">
+        {/* 프로그레스 바 — Crimson & Ochre 그라데이션 */}
+        <div className="h-2 w-full overflow-hidden rounded-sm border border-white/[0.06] bg-[#1a0a0c]">
           <motion.div
-            className="h-full bg-gradient-to-r from-[#800808] via-[#a03040] to-[#800808]"
+            className="h-full"
             style={{
+              background: `linear-gradient(90deg, ${CRIMSON}, ${OCHRE}, ${CRIMSON})`,
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)",
             }}
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: isFinalPhase ? 0.15 : 0.25 }}
           />
         </div>
         <p className="mt-2 text-center font-mono text-[11px] text-white/35">{progress}%</p>

@@ -144,7 +144,7 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
       whileHover={{ y: -5 }}
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
-      className="relative h-[120px] w-[100px] flex-none overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 text-left transition-colors duration-300 hover:border-white/14 hover:bg-white/[0.05]"
+      className="relative h-[120px] w-[125px] flex-none rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 text-left transition-colors duration-300 hover:border-white/14 hover:bg-white/[0.05]"
     >
       {/* Shared layout — slides smoothly between selected cards (Apple-style) */}
       {isSelected && (
@@ -163,7 +163,7 @@ function DockCard({ style, isSelected, onClick }: DockCardProps) {
         />
       )}
       <p className="relative z-10 font-mono text-[9px] tracking-[0.2em] text-white/32">{style.num}</p>
-      <p className="relative z-10 font-serif-display mt-1.5 truncate text-[13px] leading-tight text-white" title={style.title}>{style.title}</p>
+      <p className="relative z-10 font-serif-display mt-1.5 text-[13px] leading-tight text-white">{style.title}</p>
       <p className="relative z-10 lux-copy mt-1 line-clamp-2 text-[10px] text-white/46">{style.subtitle}</p>
     </motion.button>
   );
