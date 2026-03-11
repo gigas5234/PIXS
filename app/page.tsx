@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles, PenLine, Camera, Palette, Star } from "lucide-react";
@@ -167,7 +167,7 @@ function now() {
 
 export default function HomePage() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string>("rembrandt");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
   const [signatureText, setSignatureText] = useState<string>("");
@@ -176,7 +176,8 @@ export default function HomePage() {
   const [apiComplete, setApiComplete] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
-  const selected = selectedId ? STYLES.find((s) => s.id === selectedId) ?? null : null;
+  const selected = STYLES.find((s) => s.id === selectedId) ?? STYLES[0];
+  const uploadSectionRef = useRef<HTMLElement>(null);
   const canGenerate = Boolean(uploadedFile && selectedId);
 
   const addLog = useCallback((entry: Omit<LogEntry, "id" | "time">) => {
@@ -210,7 +211,7 @@ export default function HomePage() {
   };
 
   const handleGenerate = useCallback(async () => {
-    if (!canGenerate || !uploadedFile || !selectedId || !selected || isGenerating) return;
+    if (!canGenerate || !uploadedFile || !selectedId || isGenerating) return;
 
     const promptTemplate = getPromptFileByStyle(selectedId);
     if (typeof window !== "undefined") {
@@ -260,7 +261,7 @@ export default function HomePage() {
       addLog({ type: "error", message: msg, detail: err });
       setIsGenerating(false);
     }
-  }, [canGenerate, uploadedFile, selectedId, selected?.title, uploadPreviewUrl, isGenerating, addLog]);
+  }, [canGenerate, uploadedFile, selectedId, selected.title, uploadPreviewUrl, isGenerating, addLog]);
 
   const handleLoadingComplete = useCallback(() => {
     setApiComplete(false);
@@ -274,6 +275,11 @@ export default function HomePage() {
       if (uploadPreviewUrl) URL.revokeObjectURL(uploadPreviewUrl);
     };
   }, [uploadPreviewUrl]);
+
+  const handleStyleSelect = useCallback((id: string) => {
+    setSelectedId(id);
+    uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#080808] text-white">
@@ -292,7 +298,7 @@ export default function HomePage() {
         className="pointer-events-none fixed inset-0 z-0"
         animate={{
           background:
-            !selected || selected.concept === "atelier"
+            selected.concept === "atelier"
               ? "radial-gradient(ellipse 75% 60% at 22% 32%, rgba(94,11,21,0.16), transparent 60%)"
               : "radial-gradient(ellipse 75% 60% at 78% 32%, rgba(18,42,100,0.16), transparent 60%)",
         }}
@@ -323,81 +329,222 @@ export default function HomePage() {
             거장의 붓 터치로 탄생하는 단 하나의 마스터피스.
           </p>
 
-          {/* Artist Journey — 3단계 스테퍼 */}
-          <div className="mt-8 flex items-center justify-center gap-4 sm:gap-8">
-            {/* 1. 카메라 (업로드) */}
-            <div className="flex flex-col items-center gap-1">
+          {/* Artist Journey — 3단계 스테퍼 [팔레트-카메라-별] 미니멀 50%, 와인색 */}
+          <div className="mt-6 flex items-center justify-center gap-2 sm:gap-4">
+            {/* 1. 팔레트 (스타일) — 기본 완료 */}
+            <div className="flex flex-col items-center gap-0.5">
+              <motion.div
+                className="flex h-5 w-5 items-center justify-center rounded-full transition-all sm:h-[22px] sm:w-[22px]"
+                style={{
+                  backgroundColor: "rgba(128,8,8,0.2)",
+                  color: "#800808",
+                  boxShadow: "0 0 8px rgba(128,8,8,0.4)",
+                }}
+              >
+                <Palette size={10} strokeWidth={2} className="sm:w-[11px] sm:h-[11px]" />
+              </motion.div>
+              <span className="text-[8px] tracking-wider text-white/50 uppercase sm:text-[9px]">Style</span>
+            </div>
+
+            <div className="h-px w-4 sm:w-6 bg-gradient-to-r from-white/10 to-white/5" />
+
+            {/* 2. 카메라 (업로드) — 사진 업로드 시 와인색 불 */}
+            <div className="flex flex-col items-center gap-0.5">
               <motion.div
                 animate={
                   !uploadPreviewUrl
-                    ? { opacity: [0.7, 1, 0.7], scale: [0.95, 1.05, 0.95] }
+                    ? { opacity: [0.6, 1, 0.6], scale: [0.95, 1.05, 0.95] }
                     : { opacity: 1, scale: 1 }
                 }
                 transition={{ duration: 2, repeat: !uploadPreviewUrl ? Infinity : 0, ease: "easeInOut" }}
-                className="flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+                className="flex h-5 w-5 items-center justify-center rounded-full transition-all sm:h-[22px] sm:w-[22px]"
                 style={{
-                  backgroundColor: uploadPreviewUrl ? "rgba(218,165,32,0.2)" : "transparent",
-                  color: uploadPreviewUrl ? "#DAA520" : "#DAA520",
-                  boxShadow: uploadPreviewUrl ? "0 0 12px rgba(218,165,32,0.4)" : "0 0 16px rgba(218,165,32,0.6)",
+                  backgroundColor: uploadPreviewUrl ? "rgba(128,8,8,0.2)" : "transparent",
+                  color: uploadPreviewUrl ? "#800808" : "rgba(255,255,255,0.4)",
+                  boxShadow: uploadPreviewUrl ? "0 0 8px rgba(128,8,8,0.5)" : "0 0 6px rgba(128,8,8,0.3)",
                 }}
               >
-                <Camera size={18} strokeWidth={2} />
+                <Camera size={10} strokeWidth={2} className="sm:w-[11px] sm:h-[11px]" />
               </motion.div>
-              <span className="text-[9px] tracking-wider text-white/50 uppercase">Upload</span>
+              <span className="text-[8px] tracking-wider text-white/50 uppercase sm:text-[9px]">Upload</span>
             </div>
 
-            <div className="h-px w-8 sm:w-12 bg-gradient-to-r from-white/10 to-white/5" />
+            <div className="h-px w-4 sm:w-6 bg-gradient-to-r from-white/5 to-white/10" />
 
-            {/* 2. 팔레트 (스타일) */}
-            <div className="flex flex-col items-center gap-1">
+            {/* 3. 빛나는 별 (탄생) — 업로드+스타일 완료 시 */}
+            <div className="flex flex-col items-center gap-0.5">
               <motion.div
                 animate={
-                  uploadPreviewUrl && !selectedId
-                    ? { opacity: [0.7, 1, 0.7], scale: [0.95, 1.05, 0.95] }
-                    : { opacity: 1, scale: 1 }
-                }
-                transition={{ duration: 2, repeat: uploadPreviewUrl && !selectedId ? Infinity : 0, ease: "easeInOut" }}
-                className="flex h-10 w-10 items-center justify-center rounded-full transition-all"
-                style={{
-                  backgroundColor: uploadPreviewUrl ? (selectedId ? "rgba(218,165,32,0.2)" : "rgba(218,165,32,0.12)") : "rgba(255,255,255,0.04)",
-                  color: uploadPreviewUrl ? "#DAA520" : "rgba(255,255,255,0.25)",
-                  boxShadow: uploadPreviewUrl ? (selectedId ? "0 0 12px rgba(218,165,32,0.4)" : "0 0 16px rgba(218,165,32,0.5)") : "none",
-                }}
-              >
-                <Palette size={18} strokeWidth={2} />
-              </motion.div>
-              <span className="text-[9px] tracking-wider text-white/50 uppercase">Style</span>
-            </div>
-
-            <div className="h-px w-8 sm:w-12 bg-gradient-to-r from-white/5 to-white/10" />
-
-            {/* 3. 빛나는 별 (탄생) */}
-            <div className="flex flex-col items-center gap-1">
-              <motion.div
-                animate={
-                  uploadPreviewUrl && selectedId
+                  canGenerate
                     ? { opacity: [0.8, 1, 0.8], scale: [0.98, 1.02, 0.98] }
                     : { opacity: 1, scale: 1 }
                 }
-                transition={{ duration: 2.5, repeat: uploadPreviewUrl && selectedId ? Infinity : 0, ease: "easeInOut" }}
-                className="flex h-10 w-10 items-center justify-center rounded-full transition-all"
+                transition={{ duration: 2.5, repeat: canGenerate ? Infinity : 0, ease: "easeInOut" }}
+                className="flex h-5 w-5 items-center justify-center rounded-full transition-all sm:h-[22px] sm:w-[22px]"
                 style={{
-                  backgroundColor: uploadPreviewUrl && selectedId ? "rgba(218,165,32,0.25)" : "rgba(255,255,255,0.04)",
-                  color: uploadPreviewUrl && selectedId ? "#DAA520" : "rgba(255,255,255,0.25)",
-                  boxShadow: uploadPreviewUrl && selectedId ? "0 0 20px rgba(218,165,32,0.6)" : "none",
+                  backgroundColor: canGenerate ? "rgba(128,8,8,0.25)" : "rgba(255,255,255,0.04)",
+                  color: canGenerate ? "#800808" : "rgba(255,255,255,0.25)",
+                  boxShadow: canGenerate ? "0 0 10px rgba(128,8,8,0.6)" : "none",
                 }}
               >
-                <Star size={18} strokeWidth={2} fill={uploadPreviewUrl && selectedId ? "#DAA520" : "none"} />
+                <Star size={10} strokeWidth={2} fill={canGenerate ? "#800808" : "none"} className="sm:w-[11px] sm:h-[11px]" />
               </motion.div>
-              <span className="text-[9px] tracking-wider text-white/50 uppercase">Birth</span>
+              <span className="text-[8px] tracking-wider text-white/50 uppercase sm:text-[9px]">Birth</span>
             </div>
           </div>
         </motion.header>
 
         {/* ══════════════════════════════════════
-            2. Upload Section (사진 업로드) — 먼저
+            2. Style Section (스타일 선택) — 먼저
+        ══════════════════════════════════════ */}
+        <div>
+        {/* Masterpiece Canvas (반응형 가로 꽉 참) */}
+        <motion.section
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mb-6 max-w-6xl"
+        >
+          {/* Canvas — 모바일 가로 꽉 차게 (-mx로 패딩 상쇄), 데스크톱은 max 제한 */}
+          <div className="-mx-4 sm:mx-0">
+          <motion.div
+            animate={{
+              boxShadow: [
+                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
+                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 55px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0.22)`,
+                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
+              ],
+            }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="relative aspect-square w-full overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0a0a] sm:max-w-[min(57vw,480px)] sm:mx-auto"
+          >
+              <div className="noise-overlay" />
+
+              {/* Gradient background (always present, transitions between styles) */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedId + "-bg"}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0"
+                  style={{ background: selected.placeholderGradient }}
+                />
+              </AnimatePresence>
+
+              {/* Sample image */}
+              <AnimatePresence mode="wait">
+                {selected.imageSrc && (
+                  <motion.img
+                    key={selectedId + "-img"}
+                    src={selected.imageSrc}
+                    alt={selected.title}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.02 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
+              </AnimatePresence>
+
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+              {/* Museum plaque */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedId + "-plaque"}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.35, delay: 0.25 }}
+                  className="absolute bottom-4 left-5 right-5 flex items-end justify-between"
+                >
+                  <div>
+                    <p className="font-serif-display text-sm font-medium leading-snug text-white/92">
+                      {selected.title}
+                    </p>
+                    <p className="lux-copy mt-0.5 text-[10px] text-white/45">{selected.subtitle}</p>
+                  </div>
+                  <p className="font-mono text-[10px] text-white/30">{selected.num}</p>
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Style Dock — 에피그래프 + 1줄 가로 스크롤 */}
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mb-8 max-w-6xl"
+        >
+          <div className="space-y-4">
+            {/* 에피그래프 — 얇은 구분선 + 가벼운 문구 */}
+            <div className="space-y-3">
+              <div className="h-px w-full bg-gradient-to-r from-transparent via-white/12 to-transparent" />
+              <p className="text-center font-serif italic font-extralight tracking-[0.08em] text-white/55 text-sm sm:text-base">
+                거장의 팔레트를 선택하여 여정을 시작하세요
+              </p>
+            </div>
+            <p className="mb-2 text-[10px] tracking-[0.37em] text-[#d2a2aa] uppercase">
+              The Stylist&apos;s Collection
+            </p>
+            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+              {STYLES.map((style) => (
+                <DockCard
+                  key={style.id}
+                  style={style}
+                  isSelected={selectedId === style.id}
+                  onClick={() => handleStyleSelect(style.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </motion.section>
+
+        {/* The Stylist's Note (설명) */}
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mb-10 max-w-6xl"
+        >
+          <motion.div
+            key={selectedId + "-note"}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+            className="rounded-xl border border-white/[0.06] bg-black/20 px-5 py-6 sm:px-6"
+          >
+            <p className="mb-3 text-[10px] tracking-[0.37em] text-[#d2a2aa] uppercase">
+              The Stylist&apos;s Note
+            </p>
+            <h2 className="font-serif-display text-2xl leading-tight text-[#f7e0e5] sm:text-3xl">
+              {selected.title}
+            </h2>
+            <p className="lux-copy mt-2 text-sm text-white/52">{selected.subtitle}</p>
+
+            <div className="my-5 h-px w-10 bg-[#800808]/55" />
+
+            <p className="font-serif-display text-sm leading-[1.85] text-[#f0dde1]/85 sm:text-[0.9375rem]">
+              {selected.note}
+            </p>
+
+            <p className="lux-copy mt-6 text-[10px] tracking-[0.3em] text-white/24 uppercase">
+              {selected.concept === "atelier" ? "The Royal Atelier" : "Cine-Matic Paw"}
+            </p>
+          </motion.div>
+        </motion.section>
+        </div>
+
+        {/* ══════════════════════════════════════
+            3. Upload Section (사진 업로드) — 스타일 선택 후
         ══════════════════════════════════════ */}
         <motion.section
+          ref={uploadSectionRef}
           id="upload-section"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -408,11 +555,7 @@ export default function HomePage() {
           <div className="mb-6">
             <p className="font-serif-display text-xl text-[#f8dde2]">스튜디오 캔버스 테이블</p>
             <p className="lux-copy mt-1 text-xs text-white/50">
-              {selected ? (
-                <><span className="text-[#f0cad0]">{selected.title}</span> 스타일로 기록할 사진을 업로드하세요.</>
-              ) : (
-                <>사진을 먼저 업로드하면 스타일을 선택할 수 있습니다.</>
-              )}
+              <span className="text-[#f0cad0]">{selected.title}</span> 스타일로 기록할 사진을 업로드하세요.
             </p>
           </div>
 
@@ -517,9 +660,9 @@ export default function HomePage() {
                 canGenerate
                   ? {
                       boxShadow: [
-                        "0 0 20px rgba(218,165,32,0.25), 0 0 40px rgba(128,8,8,0.2)",
-                        "0 0 28px rgba(218,165,32,0.4), 0 0 50px rgba(128,8,8,0.3)",
-                        "0 0 20px rgba(218,165,32,0.25), 0 0 40px rgba(128,8,8,0.2)",
+                        "0 0 20px rgba(128,8,8,0.3), 0 0 40px rgba(128,8,8,0.2)",
+                        "0 0 28px rgba(128,8,8,0.45), 0 0 50px rgba(128,8,8,0.3)",
+                        "0 0 20px rgba(128,8,8,0.3), 0 0 40px rgba(128,8,8,0.2)",
                       ],
                     }
                   : {}
@@ -527,7 +670,7 @@ export default function HomePage() {
               transition={canGenerate ? { duration: 2, repeat: Infinity, ease: "easeInOut" } : {}}
               className={`rounded-full px-10 py-3 text-sm font-semibold tracking-wide transition-all duration-500 ${
                 canGenerate
-                  ? "border-2 border-[#DAA520]/70 bg-[#2a0f15]/95 text-[#f5ccd3] hover:bg-[#38111b]"
+                  ? "border-2 border-[#800808]/80 bg-[#2a0f15]/95 text-[#f5ccd3] hover:bg-[#38111b]"
                   : "gold-border-glow cursor-not-allowed border-white/16 bg-white/[0.05] text-white/36"
               }`}
             >
@@ -535,197 +678,11 @@ export default function HomePage() {
             </motion.button>
             <p className="text-xs text-white/42">
               {canGenerate
-                ? `${selected?.title ?? ""} 스타일로 생성합니다 — 준비 완료`
-                : !uploadPreviewUrl
-                  ? "사진을 업로드하면 활성화됩니다"
-                  : "스타일을 선택해주세요"}
+                ? `${selected.title} 스타일로 생성합니다 — 준비 완료`
+                : "사진을 업로드하면 활성화됩니다"}
             </p>
           </div>
         </motion.section>
-
-        {/* ══════════════════════════════════════
-            3. Style Section (스타일 선택) — 사진 업로드 후 활성화
-        ══════════════════════════════════════ */}
-        <div
-          className={`transition-opacity duration-300 ${!uploadPreviewUrl ? "pointer-events-none opacity-30" : ""}`}
-        >
-        {/* Masterpiece Canvas (반응형 가로 꽉 참) */}
-        <motion.section
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto mb-6 max-w-6xl"
-        >
-          {/* Canvas — 모바일 가로 꽉 차게 (-mx로 패딩 상쇄), 데스크톱은 max 제한 */}
-          <div className="-mx-4 sm:mx-0">
-          <motion.div
-            animate={{
-              boxShadow: [
-                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${!selected || selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
-                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 55px rgba(${!selected || selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0.22)`,
-                `0 0 0 1px rgba(0,0,0,0.9), 0 8px 60px rgba(0,0,0,0.85), 0 0 0px rgba(${!selected || selected.concept === "atelier" ? "128,8,8" : "75,125,212"},0)`,
-              ],
-            }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-            className="relative aspect-square w-full overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0a0a] sm:max-w-[min(57vw,480px)] sm:mx-auto"
-          >
-              <div className="noise-overlay" />
-
-              {/* Gradient background (always present, transitions between styles) */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={selectedId ?? "none"}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="absolute inset-0"
-                  style={{ background: selected?.placeholderGradient ?? "radial-gradient(ellipse 50% 50% at 50% 50%, #1a0c07 0%, #0d0808 100%)" }}
-                />
-              </AnimatePresence>
-
-              {/* Sample image — object-contain prevents cropping */}
-              <AnimatePresence mode="wait">
-                {selected?.imageSrc && (
-                  <motion.img
-                    key={selectedId + "-img"}
-                    src={selected.imageSrc}
-                    alt={selected.title}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.02 }}
-                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                )}
-              </AnimatePresence>
-
-              {/* Vignette — lighter so image details show */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-              {/* Placeholder label — 스타일 미선택 시 */}
-              {!selected?.imageSrc && (
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <p className="text-[11px] tracking-[0.3em] text-white/14 uppercase">
-                    {selected ? "Sample Coming Soon" : "스타일을 선택해주세요"}
-                  </p>
-                </div>
-              )}
-
-              {/* Museum plaque */}
-              <AnimatePresence mode="wait">
-                {selected && (
-                <motion.div
-                  key={selectedId + "-plaque"}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.35, delay: 0.25 }}
-                  className="absolute bottom-4 left-5 right-5 flex items-end justify-between"
-                >
-                  <div>
-                    <p className="font-serif-display text-sm font-medium leading-snug text-white/92">
-                      {selected.title}
-                    </p>
-                    <p className="lux-copy mt-0.5 text-[10px] text-white/45">{selected.subtitle}</p>
-                  </div>
-                  <p className="font-mono text-[10px] text-white/30">{selected.num}</p>
-                </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </div>
-        </motion.section>
-
-        {/* ══════════════════════════════════════
-            3. Style Dock (선택) — Classic Suite / Modern Gallery 개행 구분
-        ══════════════════════════════════════ */}
-        <motion.section
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto mb-8 max-w-6xl"
-        >
-          <div className="space-y-6">
-            {/* The Classic Suite — 1~5 */}
-            <div>
-              <p className="mb-3 text-[10px] tracking-[0.37em] text-[#d2a2aa] uppercase">
-                The Classic Suite
-              </p>
-              <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap md:overflow-visible">
-                {STYLES.slice(0, 5).map((style) => (
-                  <DockCard
-                    key={style.id}
-                    style={style}
-                    isSelected={selectedId === style.id}
-                    onClick={() => setSelectedId(style.id)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* The Modern Gallery — 6~10 */}
-            <div>
-              <p className="mb-3 text-[10px] tracking-[0.37em] text-[#a2aad2] uppercase">
-                The Modern Gallery
-              </p>
-              <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap md:overflow-visible">
-                {STYLES.slice(5).map((style) => (
-                  <DockCard
-                    key={style.id}
-                    style={style}
-                    isSelected={selectedId === style.id}
-                    onClick={() => setSelectedId(style.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* ══════════════════════════════════════
-            4. The Stylist's Note (설명)
-        ══════════════════════════════════════ */}
-        <motion.section
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto mb-10 max-w-6xl"
-        >
-          <AnimatePresence mode="wait">
-            {selected && (
-            <motion.div
-              key={selectedId + "-note"}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-xl border border-white/[0.06] bg-black/20 px-5 py-6 sm:px-6"
-            >
-              <p className="mb-3 text-[10px] tracking-[0.37em] text-[#d2a2aa] uppercase">
-                The Stylist&apos;s Note
-              </p>
-              <h2 className="font-serif-display text-2xl leading-tight text-[#f7e0e5] sm:text-3xl">
-                {selected.title}
-              </h2>
-              <p className="lux-copy mt-2 text-sm text-white/52">{selected.subtitle}</p>
-
-              <div className="my-5 h-px w-10 bg-[#800808]/55" />
-
-              <p className="font-serif-display text-sm leading-[1.85] text-[#f0dde1]/85 sm:text-[0.9375rem]">
-                {selected.note}
-              </p>
-
-              <p className="lux-copy mt-6 text-[10px] tracking-[0.3em] text-white/24 uppercase">
-                {selected.concept === "atelier" ? "The Royal Atelier" : "Cine-Matic Paw"}
-              </p>
-            </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.section>
-
-        </div>
-        {/* End of Style Section wrapper (opacity-30 when no upload) */}
 
       </div>
     </main>
