@@ -26,7 +26,7 @@ export function DebugLogPanel({ logs, onClear }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-4 right-4 z-[90] flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/70 text-white/70 shadow-lg backdrop-blur-sm transition-colors hover:bg-black/85 hover:text-white"
+        className="fixed bottom-4 right-4 z-[200] flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/70 text-white/70 shadow-lg backdrop-blur-sm transition-colors hover:bg-black/85 hover:text-white"
         title="로그 보기"
       >
         <Bug size={18} />
@@ -43,7 +43,7 @@ export function DebugLogPanel({ logs, onClear }: Props) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-20 right-4 z-[91] flex max-h-[50vh] w-[min(360px,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-white/15 bg-black/95 shadow-2xl backdrop-blur-md"
+            className="fixed bottom-20 right-4 z-[201] flex max-h-[50vh] w-[min(360px,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-white/15 bg-black/95 shadow-2xl backdrop-blur-md"
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
               <span className="text-xs font-medium text-white/80">API 로그</span>
