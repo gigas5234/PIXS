@@ -9,6 +9,9 @@ import { centerCropToSquare } from "@/lib/image-utils";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { DebugLogPanel, type LogEntry } from "@/components/DebugLogPanel";
 
+/** 배포 시 false로 변경하거나, 아래 DEBUG_STEPS 로그 블록 전체 삭제 */
+const DEBUG_STEPS = true;
+
 /* ─────────────────────────────────────────────
    Style data — imageSrc: null = placeholder
    To add a sample, set: imageSrc: "/gallery/<name>_sample.png"
@@ -225,6 +228,8 @@ export default function HomePage() {
     addLog({ type: "request", message: `POST /api/generate (style: ${selectedId})` });
 
     try {
+      if (DEBUG_STEPS) addLog({ type: "info", message: "sessionStorage 저장 완료" });
+
       // 결과 페이지 재생성용 원본 이미지 저장
       await new Promise<void>((resolve) => {
         const reader = new FileReader();
@@ -239,17 +244,25 @@ export default function HomePage() {
         reader.readAsDataURL(uploadedFile);
       });
 
+      if (DEBUG_STEPS) addLog({ type: "info", message: "원본 이미지 base64 인코딩 완료" });
+
       const formData = new FormData();
       formData.append("image", uploadedFile);
       formData.append("styleId", selectedId);
       formData.append("signatureText", signatureText);
 
+      if (DEBUG_STEPS) addLog({ type: "info", message: "API 요청 전송 중..." });
       const res = await fetch("/api/generate", {
         method: "POST",
         body: formData,
       });
 
-      const data = await res.json().catch(() => ({}));
+      if (DEBUG_STEPS) addLog({ type: "info", message: `응답 수신 HTTP ${res.status}` });
+      const data = await res.json().catch((e) => {
+        if (DEBUG_STEPS) addLog({ type: "info", message: "JSON 파싱 실패", detail: e });
+        return {};
+      });
+      if (DEBUG_STEPS && res.ok) addLog({ type: "info", message: "JSON 파싱 완료" });
 
       if (!res.ok) {
         addLog({
@@ -262,8 +275,13 @@ export default function HomePage() {
       }
 
       if (data.imageUrl) {
+        if (DEBUG_STEPS) addLog({ type: "info", message: "imageUrl 저장, 로딩 100% 후 결과 페이지 이동" });
         sessionStorage.setItem("pixs:resultImageUrl", data.imageUrl);
-        addLog({ type: "success", message: "이미지 생성 완료" });
+        addLog({
+          type: "success",
+          message: "이미지 생성 완료",
+          detail: DEBUG_STEPS ? data.debug : undefined,
+        });
         setApiComplete(true);
       } else {
         addLog({ type: "error", message: "응답에 imageUrl 없음", detail: data });

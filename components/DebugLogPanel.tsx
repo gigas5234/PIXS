@@ -7,7 +7,7 @@ import { Bug, X } from "lucide-react";
 export type LogEntry = {
   id: string;
   time: string;
-  type: "request" | "success" | "error";
+  type: "request" | "success" | "error" | "info";
   message: string;
   detail?: unknown;
 };
@@ -78,7 +78,9 @@ export function DebugLogPanel({ logs, onClear }: Props) {
                         ? "border-[#e05050] bg-[#e05050]/10 text-[#f0a0a0]"
                         : log.type === "success"
                           ? "border-[#50c050] bg-[#50c050]/10 text-[#a0f0a0]"
-                          : "border-white/30 bg-white/5 text-white/70"
+                          : log.type === "info"
+                            ? "border-white/20 bg-white/3 text-white/50"
+                            : "border-white/30 bg-white/5 text-white/70"
                     }`}
                   >
                     <div className="flex items-center gap-2">
