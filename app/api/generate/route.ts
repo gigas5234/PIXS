@@ -130,6 +130,10 @@ const ALLOWED_MIME_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"
  * 2. GOOGLE_APPLICATION_CREDENTIALS (파일 경로)
  * 3. keys/credentials.b64 (로컬 폴백)
  */
+
+/** Vercel 등: 이미지 생성 60~90초 소요 가능 — 타임아웃 방지 */
+export const maxDuration = 120;
+
 export async function POST(request: NextRequest) {
   const debug: { step?: string; error?: string; detail?: unknown }[] = [];
 

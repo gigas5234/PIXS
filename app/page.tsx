@@ -252,10 +252,14 @@ export default function HomePage() {
       formData.append("signatureText", signatureText);
 
       if (DEBUG_STEPS) addLog({ type: "info", message: "API 요청 전송 중..." });
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 120_000);
       const res = await fetch("/api/generate", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
+      window.clearTimeout(timeoutId);
 
       if (DEBUG_STEPS) addLog({ type: "info", message: `응답 수신 HTTP ${res.status}` });
       const data = await res.json().catch((e) => {
@@ -288,8 +292,11 @@ export default function HomePage() {
         setIsGenerating(false);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      addLog({ type: "error", message: msg, detail: err });
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      const msg = isAbort
+        ? "요청 시간 초과 (120초). 네트워크가 느리거나 서버 응답이 지연되었습니다."
+        : err instanceof Error ? err.message : String(err);
+      addLog({ type: "error", message: msg, detail: isAbort ? undefined : err });
       setIsGenerating(false);
     }
   }, [canGenerate, uploadedFile, selectedId, selected.title, uploadPreviewUrl, isGenerating, addLog, signatureText]);

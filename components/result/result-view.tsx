@@ -115,7 +115,14 @@ export function ResultView({ styleId }: ResultViewProps) {
       formData.append("styleId", newStyleId);
       formData.append("signatureText", sig);
 
-      const res = await fetch("/api/generate", { method: "POST", body: formData });
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 120_000);
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      window.clearTimeout(timeoutId);
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) throw new Error(data.error ?? "Generation failed");
